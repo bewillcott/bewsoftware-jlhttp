@@ -571,10 +571,6 @@ public class HTTPServer {
         Path p = of(path);
         Path parent = p.getParent();
         return parent != null ? parent.toString() : p.isAbsolute() ? p.toString() : null;
-
-//        return (path = trimRight(path, '/'); // remove trailing slash
-//        int slash = path.lastIndexOf('/');
-//        return slash < 0 ? null : path.substring(0, slash);
     }
 
     /**
