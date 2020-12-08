@@ -1,11 +1,12 @@
 /*
  *  Copyright © 2005-2019 Amichai Rothman
+ *  Copyright © 2020 Bradley Willcott
  *
  *  This file is part of JLHTTP - the Java Lightweight HTTP Server.
  *
  *  JLHTTP is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 2 of the License, or
+ *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
  *
  *  JLHTTP is distributed in the hope that it will be useful,
@@ -18,7 +19,7 @@
  *
  *  For additional info see http://www.freeutils.net/source/jlhttp/
  */
-package net.freeutils.httpserver;
+package com.bewsoftware.httpserver;
 
 import java.io.*;
 import java.lang.annotation.ElementType;
@@ -127,9 +128,24 @@ import static java.nio.file.Path.of;
  * see the {@link #main main} method at the bottom of the file, and follow
  * the code into the API from there. Alternatively, you can just browse through
  * the classes and utility methods and read their documentation and code.
+ * <p>
+ * <hr>
+ * <b>Changes:</b>
+ * <ul>
+ * <li>Made changes recommended by Netbeans 12.1.</li>
+ * <li>Updated code to JDK 12.</li>
+ * <li>Made specific to requirement of publishing static web pages from 'jar' file.</li>
+ * <li>Added ability to auto open the system default browser to hosted location.</li>
+ * <li>Changed package from: {@code net.freeutils.httpserver} to {@code com.bewsoftware.httpserver}.</li>
+ * <li>Updated lisence from GPLv2 to GPLv3.</li>
+ * <li>To be embed inside 'jar' files containing the results of my MDj CLI program (.md -> .html).</li>
+ * </ul>
+ * Bradley Willcott (2020/12/08 - v2.5.2)
+ * <hr>
  *
  * @author Amichai Rothman
  * @since 2008-07-24
+ * @version 2.5.2
  */
 public class HTTPServer {
 
@@ -179,6 +195,12 @@ public class HTTPServer {
     protected static final char[] MONTHS
                                   = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec"
                     .toCharArray();
+    /**
+     * The operating system we are running on.
+     * <p>
+     * Added by: Bradley Willcott (2020/12/08)
+     */
+    protected static volatile String OS = System.getProperty("os.name").toLowerCase();
 
     /**
      * The MIME types that can be compressed (prefix/suffix wildcards allowed).
@@ -703,6 +725,39 @@ public class HTTPServer {
     }
 
     /**
+     * Are we running on a MacIntosh system?
+     * <p>
+     * Added by: Bradley Willcott (2020/12/08)
+     *
+     * @return result.
+     */
+    public static boolean isMac() {
+        return OS.contains("mac");
+    }
+
+    /**
+     * Are we running on a Unix/Linux type system?
+     * <p>
+     * Added by: Bradley Willcott (2020/12/08)
+     *
+     * @return result.
+     */
+    public static boolean isUnix() {
+        return OS.contains("nix") || OS.contains("nux") || OS.indexOf("aix") > 0;
+    }
+
+    /**
+     * Are we running on a Windows system?
+     * <p>
+     * Added by: Bradley Willcott (2020/12/08)
+     *
+     * @return result.
+     */
+    public static boolean isWindows() {
+        return OS.contains("win");
+    }
+
+    /**
      * Returns a string constructed by joining the string representations of the
      * iterated objects (in order), with the delimiter inserted between them.
      *
@@ -723,12 +778,13 @@ public class HTTPServer {
         return sb.toString();
     }
 
+    //=====================================================================================
     /**
      * Starts a stand-alone HTTP server, serving files from disk.
      *
      * @param args the command line arguments
      */
-    public static void main(String[] args) throws URISyntaxException {
+    public static void main(String[] args) throws URISyntaxException, InterruptedException {
         HTTPServer server = null;
 
         try
@@ -745,8 +801,6 @@ public class HTTPServer {
                 addContentTypes(new FileInputStream(f));
             } else
             {
-//                f = new File(HTTPServer.class.getResourceAsStream("/etc/mime.types").getFile());
-
                 addContentTypes(HTTPServer.class.getResourceAsStream("/etc/mime.types"));
             }
 
@@ -757,18 +811,19 @@ public class HTTPServer {
                     {
                         long now = System.currentTimeMillis();
                         resp.getHeaders().add("Content-Type", "text/plain");
-                        resp.send(200, String.format("%tF %<tT", now));
+                        resp.send(200, String.format("Server time: %tF %<tT", now));
                         return 0;
                     });
 
             server.start();
             System.out.println("HTTPServer is listening on port " + server.port);
+            openURL(new URL("http", "localhost", server.port, "/"));
 
         } catch (IOException | NumberFormatException e)
         {
             System.err.println("error: " + e);
         }
-    }
+    } //=====================================================================================
 
     /**
      * Matches the given ETag value against the given ETags. A match is found
@@ -799,6 +854,58 @@ public class HTTPServer {
         }
 
         return false;
+    }
+
+    /**
+     * Open the default browser to the URL address.
+     * <p>
+     * Added by: Bradley Willcott (2020/12/08)
+     *
+     * @param url Address to open.
+     *
+     * @throws IOException          if any.
+     * @throws InterruptedException if any.
+     */
+    public static void openURL(URL url) throws IOException, InterruptedException {
+        Runtime rt = Runtime.getRuntime();
+
+        try
+        {
+            if (isWindows())
+            {
+                rt.exec("rundll32 url.dll,FileProtocolHandler " + url).waitFor();
+                System.out.println("Browser: " + url);
+            } else if (isMac())
+            {
+                String[] cmd =
+                {
+                    "open", url.toString()
+                };
+                rt.exec(cmd).waitFor();
+                System.out.println("Browser: " + url);
+            } else if (isUnix())
+            {
+                String[] cmd =
+                {
+                    "xdg-open", url.toString()
+                };
+                rt.exec(cmd).waitFor();
+                System.out.println("Browser: " + url);
+            } else
+            {
+                try
+                {
+                    throw new IllegalStateException();
+                } catch (IllegalStateException ex)
+                {
+                    System.err.println("desktop.not.supported");
+                    throw ex;
+                }
+            }
+        } catch (IOException | InterruptedException ex)
+        {
+            throw ex;
+        }
     }
 
     /**
