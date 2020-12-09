@@ -42,6 +42,7 @@ import java.util.zip.GZIPOutputStream;
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLSocket;
+import javax.swing.JOptionPane;
 
 import static java.nio.file.Path.of;
 
@@ -168,6 +169,20 @@ public class HTTPServer {
         "EEEE, dd-MMM-yy HH:mm:ss z", // RFC 850, obsoleted by RFC 1036
         "EEE MMM d HH:mm:ss yyyy"      // ANSI C's asctime() format
     };
+
+    /**
+     * Program title.
+     * <p>
+     * Added by: Bradley Willcott (2020/12/08)
+     */
+    public static final String TITLE = "HTTP Server";
+
+    /**
+     * Http Server version.
+     * <p>
+     * Added by: Bradley Willcott (2020/12/08)
+     */
+    public static final String VERSION = "v2.5.2";
 
     /**
      * Date format string.
@@ -783,6 +798,9 @@ public class HTTPServer {
      * Starts a stand-alone HTTP server, serving files from disk.
      *
      * @param args the command line arguments
+     *
+     * @throws URISyntaxException   if any.
+     * @throws InterruptedException if any.
      */
     public static void main(String[] args) throws URISyntaxException, InterruptedException {
         HTTPServer server = null;
@@ -816,9 +834,23 @@ public class HTTPServer {
                     });
 
             server.start();
-            System.out.println("HTTPServer is listening on port " + server.port);
+            String msg = TITLE + "(" + VERSION + ") is listening on port " + server.port;
+            System.out.println(msg);
             openURL(new URL("http", "localhost", server.port, "/"));
 
+            // GUI dialog to show server running, with button to
+            // shutdown server.
+            //
+            //Custom button text
+            Object[] options =
+            {
+                "Stop Server"
+            };
+            JOptionPane.showOptionDialog(null, msg, TITLE + " (" + VERSION + ")",
+                                         JOptionPane.OK_OPTION, JOptionPane.WARNING_MESSAGE,
+                                         null, options, null);
+
+            server.stop();
         } catch (IOException | NumberFormatException e)
         {
             System.err.println("error: " + e);
