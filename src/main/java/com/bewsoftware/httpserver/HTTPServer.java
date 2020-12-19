@@ -141,13 +141,17 @@ import static java.lang.System.exit;
  * <li>Due to the difficulty of working with such a large single file, I have split it up
  * into many smaller more manageable files.</li>
  * </ul></li>
+ * <li>(2020/12/18 - v2.5.4)
+ * <ul>
+ * <li>Made minor bug fixes to improve reliability.</li>
+ * </ul></li>
  * </ul>
  * Bradley Willcott
  * <hr>
  *
  * @author Amichai Rothman
  * @since 2008-07-24
- * @version 2.5.3
+ * @version 2.5.4
  */
 public class HTTPServer {
 
@@ -183,7 +187,7 @@ public class HTTPServer {
      * <p>
      * Added by: Bradley Willcott (2020/12/08)
      */
-    public static final String VERSION = "v2.5.3";
+    public static final String VERSION = "v2.5.4";
 
     /**
      * Date format string.
@@ -534,6 +538,7 @@ public class HTTPServer {
             {
                 "Stop Server"
             };
+
             JOptionPane.showOptionDialog(null, msg, TITLE + " (" + VERSION + ")",
                                          JOptionPane.OK_OPTION, JOptionPane.WARNING_MESSAGE,
                                          null, options, null);
@@ -735,6 +740,35 @@ public class HTTPServer {
             // NoOp
         }
         serv = null;
+
+        hosts.values().forEach((VirtualHost host) ->
+        {
+            host.contexts.values().forEach((VirtualHost.ContextInfo context) ->
+            {
+                context.handlers.values().forEach((ContextHandler handler) ->
+                {
+                    try
+                    {
+                        ((AutoCloseable) handler).close();
+                    } catch (Exception ignore)
+                    {
+                        // No Op.
+                    }
+                });
+            });
+        });
+    }
+
+    @Override
+    public String toString() {
+        return "HTTPServer{"
+               + "\nexecutor=" + executor + ", "
+               + "\nhosts=" + hosts + ", "
+               + "\nport=" + port + ", "
+               + "\nsecure=" + secure + ", "
+               + "\nserv=" + serv + ", "
+               + "\nserverSocketFactory=" + serverSocketFactory + ", "
+               + "\nsocketTimeout=" + socketTimeout + '}';
     }
 
     /**
@@ -838,9 +872,10 @@ public class HTTPServer {
                     }
                 } else if (!resp.headersSent())
                 { // if headers were not already sent, we can send an error response
+                    t.printStackTrace();
                     resp = new Response(out); // ignore whatever headers may have already been set
                     resp.getHeaders().add("Connection", "close"); // about to close connection
-                    resp.sendError(500, "Error processing request: " + t.getMessage());
+                    resp.sendError(500, "Error processing request: " + t);
                 } // otherwise just abort the connection since we can't recover
 
                 break; // proceed to close connection

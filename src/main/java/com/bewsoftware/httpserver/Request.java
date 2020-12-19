@@ -68,7 +68,7 @@ public final class Request {
      *
      * @throws IOException if an error occurs
      */
-    public Request(InputStream in, final HTTPServer server) throws IOException {
+    public Request(final InputStream in, final HTTPServer server) throws IOException {
         this.server = server;
 
         readRequestLine(in);
@@ -317,6 +317,21 @@ public final class Request {
         return host != null ? host
                : (host = server.getVirtualHost(getBaseURL().getHost())) != null ? host
                  : (host = server.getVirtualHost(null));
+    }
+
+    @Override
+    public String toString() {
+        return "Request{"
+               + "\nbaseURL=" + baseURL + ", "
+               + "\ncontext=" + context + ", "
+               + "\nheaders=" + headers + ", "
+               + "\nhost=" + host + ", "
+               + "\nmethod=" + method + ", "
+               + "\nparams=" + params + ", "
+               + "\nserver=" + server + ", "
+               + "\nuri=" + uri + ", "
+               + "\nversion=" + version
+               + "\n}";
     }
 
     /**

@@ -39,7 +39,7 @@ import java.lang.reflect.Method;
  * @since 1.0
  * @version 2.5.3
  */
-public class MethodContextHandler implements ContextHandler {
+public class MethodContextHandler implements ContextHandler, AutoCloseable {
 
     protected final Method m;
     protected final Object obj;
@@ -56,6 +56,11 @@ public class MethodContextHandler implements ContextHandler {
         {
             throw new IllegalArgumentException("invalid method signature: " + m);
         }
+    }
+
+    @Override
+    public void close() {
+        // Nothing to do.
     }
 
     @Override

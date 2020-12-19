@@ -605,7 +605,7 @@ public class NetUtils {
 
             case "HTTP/1.0":
             case "HTTP/0.9":
-                // RFC2616#14.10 - remove connection arrHeader from older versions
+                // RFC2616#14.10 - remove connection headers from older versions
                 for (String token : splitElements(reqHeaders.get("Connection"), false))
                 {
                     reqHeaders.remove(token);

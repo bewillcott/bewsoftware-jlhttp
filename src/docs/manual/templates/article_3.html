@@ -1,0 +1,25 @@
+<html lang="en-us" id="top">
+    <head>
+        <title>${page.title}</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <base href="${page.base}">
+        <link rel="stylesheet" type="text/css" href="${page.stylesheet}">
+        <link rel="stylesheet" type="text/css" href="${page.navstyle}">
+        <link rel="icon" type="image/png" href="${document.icon}">
+    </head>
+    <body>
+        <article style="max-width: ${page.width}">
+            <header>
+                <p>${document.title}</p>
+                ${page.navbar}
+            </header>
+            ${page.content}
+            <footer id="bottom">
+                <hr>
+                ${document.copyright}<br>
+                Last updated: ${system.date}
+            </footer>
+        </article>
+    </body>
+</html>

@@ -25,12 +25,13 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.FileSystem;
+import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.Collections;
 
 import static com.bewsoftware.httpserver.NetUtils.serveFile;
-import static java.util.Map.of;
+import static java.nio.file.Path.of;
 
 /**
  * The {@code JarContextHandler} services a context by mapping it
@@ -41,7 +42,7 @@ import static java.util.Map.of;
  * @since 1.0
  * @version 2.5.3
  */
-public class JarContextHandler implements ContextHandler {
+public class JarContextHandler implements ContextHandler, AutoCloseable {
 
     /**
      * Path to the 'jar' file.
@@ -57,6 +58,11 @@ public class JarContextHandler implements ContextHandler {
      * Jar file Root directory.
      */
     protected String rootDir;
+
+    /**
+     * The Jar File System.
+     */
+    protected FileSystem jarFS;
 
     /**
      * Instantiate a {@code JarContextHandler}.
@@ -82,13 +88,38 @@ public class JarContextHandler implements ContextHandler {
     public int serve(Request req, Response resp) throws IOException {
         req.setPath(of(rootDir, req.getPath()).toString().replace('\\', '/'));
 
-        int rtn;
-        try ( FileSystem jarFS = FileSystems.newFileSystem(jarURI, Collections.emptyMap()))
+        try
         {
+            if (jarFS == null)
+            {
+                jarFS = FileSystems.getFileSystem(jarURI);
+            }
 
-            rtn = serveFile(jarFS, req.getContext().getPath(), req, resp);
+            if (!jarFS.isOpen())
+            {
+                throw new FileSystemNotFoundException();
+            }
+        } catch (FileSystemNotFoundException ignore)
+        {
+            jarFS = FileSystems.newFileSystem(jarURI, Collections.emptyMap());
         }
 
-        return rtn;
+        return serveFile(jarFS, req.getContext().getPath(), req, resp);
+    }
+
+    @Override
+    public void close() throws IOException {
+        if (jarFS != null)
+        {
+            jarFS.close();
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "JarContextHandler{"
+               + "\njarPath=" + jarPath + ", "
+               + "\njarURI=" + jarURI + ", "
+               + "\nrootDir=" + rootDir + '}';
     }
 }

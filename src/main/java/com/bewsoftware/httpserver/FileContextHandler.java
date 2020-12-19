@@ -35,12 +35,17 @@ import static com.bewsoftware.httpserver.NetUtils.serveFile;
  * @since 1.0
  * @version 2.5.3
  */
-public class FileContextHandler implements ContextHandler {
+public class FileContextHandler implements ContextHandler, AutoCloseable {
 
     protected final File base;
 
     public FileContextHandler(File dir) throws IOException {
         this.base = dir.getCanonicalFile();
+    }
+
+    @Override
+    public void close() {
+        // Nothing to do.
     }
 
     @Override

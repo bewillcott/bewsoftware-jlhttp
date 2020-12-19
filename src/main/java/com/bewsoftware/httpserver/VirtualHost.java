@@ -216,6 +216,17 @@ public class VirtualHost {
         this.allowGeneratedIndex = allowed;
     }
 
+    @Override
+    public String toString() {
+        return "VirtualHost{"
+               + "\naliases=" + aliases + ", "
+               + "\nallowGeneratedIndex=" + allowGeneratedIndex + ", "
+               + "\ncontexts=" + contexts + ", "
+               + "\ndirectoryIndex=" + directoryIndex + ", "
+               + "\nmethods=" + methods + ", "
+               + "\nname=" + name + '}';
+    }
+
     /**
      * The {@code ContextInfo} class holds a single context's information.
      */

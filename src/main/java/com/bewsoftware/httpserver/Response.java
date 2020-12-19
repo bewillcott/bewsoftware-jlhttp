@@ -312,7 +312,7 @@ public class Response implements Closeable {
      *
      * @param status the response status
      *
-     * @throws IOException if an error occurs or arrHeader were already sent
+     * @throws IOException if an error occurs or headers were already sent
      * @see #sendHeaders(int, long, long, String, String, long[])
      */
     public void sendHeaders(int status) throws IOException {
@@ -330,7 +330,7 @@ public class Response implements Closeable {
         out.write(getBytes("HTTP/1.1 ", Integer.toString(status), " ", statuses[status]));
         out.write(CRLF);
         headers.writeTo(out);
-        state = 1; // arrHeader sent
+        state = 1; // headers sent
     }
 
     /**
