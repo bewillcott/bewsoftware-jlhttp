@@ -44,7 +44,25 @@ public class MethodContextHandler implements ContextHandler, AutoCloseable {
     protected final Method m;
     protected final Object obj;
 
-    public MethodContextHandler(Method m, Object obj) throws IllegalArgumentException {
+    /**
+     * Create instance of {@code MethodContextHandler}.
+     * <p>
+     * <b>Changes:</b>
+     * <ul>
+     * <li>{@code obj} changed from {@link Object} to {@link AutoCloseable} to
+     * facilitate the use of file systems other than the default. Such may
+     * require closing before the server application is completely shutdown,
+     * perhaps to have the opportunity to flush buffers to permanent storage.</li>
+     * </ul>
+     * Bradley Willcott (2020/12/19)
+     *
+     * @param m   Method with the same signature and contract as
+     *            {@link ContextHandler#serve}.
+     * @param obj The obj with the method.
+     *
+     * @throws IllegalArgumentException if any.
+     */
+    public MethodContextHandler(Method m, AutoCloseable obj) throws IllegalArgumentException {
         this.m = m;
         this.obj = obj;
         Class<?>[] params = m.getParameterTypes();
@@ -59,8 +77,8 @@ public class MethodContextHandler implements ContextHandler, AutoCloseable {
     }
 
     @Override
-    public void close() {
-        // Nothing to do.
+    public void close() throws Exception {
+        ((AutoCloseable) obj).close();
     }
 
     @Override

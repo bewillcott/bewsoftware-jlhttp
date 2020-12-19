@@ -29,8 +29,10 @@ import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.Objects;
 
 import static com.bewsoftware.httpserver.NetUtils.serveFile;
+import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.nio.file.Path.of;
 
 /**
@@ -73,8 +75,9 @@ public class JarContextHandler implements ContextHandler, AutoCloseable {
      * @throws IOException        if any.
      * @throws URISyntaxException if any.
      */
-    public JarContextHandler(Path jarPath, String dir) throws IOException, URISyntaxException {
-        this.jarPath = jarPath;
+    public JarContextHandler(String jarPath, String dir) throws IOException, URISyntaxException {
+        this.jarPath = !jarPath.isBlank() ? of(jarPath).toRealPath(NOFOLLOW_LINKS) : null;
+        Objects.requireNonNull(this.jarPath, "jarPath must point to an existing 'jar' file");
 
         jarURI = URI.create("jar:" + getClass().getProtectionDomain()
                 .getCodeSource()

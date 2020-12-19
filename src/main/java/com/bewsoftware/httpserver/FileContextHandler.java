@@ -39,8 +39,8 @@ public class FileContextHandler implements ContextHandler, AutoCloseable {
 
     protected final File base;
 
-    public FileContextHandler(File dir) throws IOException {
-        this.base = dir.getCanonicalFile();
+    public FileContextHandler(String dir) throws IOException {
+        this.base = new File(dir).getCanonicalFile();
     }
 
     @Override

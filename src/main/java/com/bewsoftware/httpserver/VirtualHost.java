@@ -95,13 +95,22 @@ public class VirtualHost {
     /**
      * Adds contexts for all methods of the given object that
      * are annotated with the {@link Context} annotation.
+     * <p>
+     * <b>Changes:</b>
+     * <ul>
+     * <li>{@code obj} changed from {@link Object} to {@link AutoCloseable} to
+     * facilitate the use of file systems other than the default. Such may
+     * require closing before the server application is completely shutdown,
+     * perhaps to have the opportunity to flush buffers to permanent storage.</li>
+     * </ul>
+     * Bradley Willcott (2020/12/19)
      *
      * @param o the object whose annotated methods are added
      *
      * @throws IllegalArgumentException if a Context-annotated
      *                                  method has an {@link Context invalid signature}
      */
-    public void addContexts(Object o) throws IllegalArgumentException {
+    public void addContexts(AutoCloseable o) throws IllegalArgumentException {
         for (Class<?> c = o.getClass(); c != null; c = c.getSuperclass())
         {
             // add to contexts those with @Context annotation

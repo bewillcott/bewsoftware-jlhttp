@@ -6,7 +6,7 @@
 
     <groupId>com.bewsoftware</groupId>
     <artifactId>bewsoftware-jlhttp</artifactId>
-    <version>2.5.4</version>
+    <version>2.5.5</version>
     <packaging>jar</packaging>
 
     <name>BEWSoftware JLHTTP</name>
@@ -23,7 +23,8 @@
         </license>
     </licenses>
 
-    <properties>
+    <properties> 
+        <major.minor.version>2.5</major.minor.version>
         <jdk.version>12</jdk.version>
         <!--<animal.sniffer.jdk.version>java15</animal.sniffer.jdk.version>-->
         <skip.assembly>false</skip.assembly>
@@ -264,7 +265,7 @@
                                         <argument>${project.build.finalName}.jar</argument>
                                         <argument>${project.build.finalName}-manual.jar</argument>
                                         <argument>${project.build.finalName}-manual-src.jar</argument>
-<!--                                        <argument>libs</argument>-->
+                                        <!--                                        <argument>libs</argument>-->
                                     </arguments> 
                                 </configuration>
                             </execution>
@@ -545,11 +546,11 @@
                     <release>${maven.compiler.target}</release>
                 </configuration>
             </plugin>
-<!--            <plugin>
+            <!--            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
             </plugin>-->
-<!--            <plugin>
+            <!--            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-scm-plugin</artifactId>
                 <dependencies>
@@ -582,7 +583,7 @@
                     <locales>en</locales>
                 </configuration>
             </plugin>
-<!--            <plugin>
+            <!--            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
                 <configuration>
@@ -615,7 +616,7 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-project-info-reports-plugin</artifactId>
             </plugin>
-<!--            <plugin>
+            <!--            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
@@ -643,7 +644,7 @@
                     </archive>
                 </configuration>
             </plugin>
-<!--            <plugin>
+            <!--            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>

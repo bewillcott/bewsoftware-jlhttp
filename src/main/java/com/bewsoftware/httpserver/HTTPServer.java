@@ -362,8 +362,6 @@ public class HTTPServer {
         {
             server = new HTTPServer(DEFAULT_PORT_RANGE[0]);
 
-            Path dir = null;
-
             // set up server
             File f = new File("/etc/mime.types");
 
@@ -377,7 +375,7 @@ public class HTTPServer {
 
             VirtualHost host = server.getVirtualHost(null); // default host
             host.setAllowGeneratedIndex(true); // with directory index pages
-            host.addContext("/", new JarContextHandler(dir, "/manual"));
+            host.addContext("/", new JarContextHandler(null, "/manual"));
             host.addContext("/api/time", (Request req, Response resp) ->
                     {
                         long now = System.currentTimeMillis();
@@ -501,8 +499,6 @@ public class HTTPServer {
         {
             server = new HTTPServer(DEFAULT_PORT_RANGE[0]);
 
-            Path dir = null;
-
             // set up server
             File f = new File("/etc/mime.types");
 
@@ -516,7 +512,7 @@ public class HTTPServer {
 
             VirtualHost host = server.getVirtualHost(null); // default host
             host.setAllowGeneratedIndex(true); // with directory index pages
-            host.addContext("/", new JarContextHandler(dir, "/"));
+            host.addContext("/", new JarContextHandler(null, "/"));
             host.addContext("/api/time", (Request req, Response resp) ->
                     {
                         long now = System.currentTimeMillis();
