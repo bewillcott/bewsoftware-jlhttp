@@ -27,12 +27,9 @@ import java.net.URISyntaxException;
 import java.nio.file.FileSystem;
 import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.FileSystems;
-import java.nio.file.Path;
 import java.util.Collections;
-import java.util.Objects;
 
 import static com.bewsoftware.httpserver.NetUtils.serveFile;
-import static java.nio.file.LinkOption.NOFOLLOW_LINKS;
 import static java.nio.file.Path.of;
 
 /**
@@ -45,11 +42,6 @@ import static java.nio.file.Path.of;
  * @version 2.5.3
  */
 public class JarContextHandler implements ContextHandler, AutoCloseable {
-
-    /**
-     * Path to the 'jar' file.
-     */
-    protected final Path jarPath;
 
     /**
      * URI to the 'jar' file.
@@ -69,20 +61,16 @@ public class JarContextHandler implements ContextHandler, AutoCloseable {
     /**
      * Instantiate a {@code JarContextHandler}.
      *
-     * @param jarPath Path to the 'jar' file.
-     * @param dir     Directory in 'jar' file to publish.
+     * @param jarURI Path to the 'jar' file.
+     * @param dir    Directory in 'jar' file to publish.
      *
      * @throws IOException        if any.
      * @throws URISyntaxException if any.
      */
-    public JarContextHandler(String jarPath, String dir) throws IOException, URISyntaxException {
-        this.jarPath = !jarPath.isBlank() ? of(jarPath).toRealPath(NOFOLLOW_LINKS) : null;
-        Objects.requireNonNull(this.jarPath, "jarPath must point to an existing 'jar' file");
+    public JarContextHandler(URI jarURI, String dir) throws IOException, URISyntaxException {
+        this.jarURI = jarURI;
 
-        jarURI = URI.create("jar:" + getClass().getProtectionDomain()
-                .getCodeSource()
-                .getLocation()
-                .toURI().toString());
+        System.out.println("jaURI:\n" + jarURI);
 
         rootDir = dir != null ? dir : "";
     }
@@ -121,7 +109,6 @@ public class JarContextHandler implements ContextHandler, AutoCloseable {
     @Override
     public String toString() {
         return "JarContextHandler{"
-               + "\njarPath=" + jarPath + ", "
                + "\njarURI=" + jarURI + ", "
                + "\nrootDir=" + rootDir + '}';
     }

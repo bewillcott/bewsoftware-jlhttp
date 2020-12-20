@@ -33,7 +33,7 @@ import java.lang.annotation.Target;
  * The annotated methods must have the same signature and contract
  * as {@link ContextHandler#serve}, but can have arbitrary names.
  *
- * @see VirtualHost#addContexts(Object)
+ * @see VirtualHost#addContexts(AutoCloseable)
  *
  * @author <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
  *

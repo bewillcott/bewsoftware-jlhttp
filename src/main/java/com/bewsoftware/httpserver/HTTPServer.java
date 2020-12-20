@@ -23,7 +23,6 @@ package com.bewsoftware.httpserver;
 
 import java.io.*;
 import java.net.*;
-import java.nio.file.Path;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -117,7 +116,7 @@ import static java.lang.System.exit;
  * <b>Getting Started</b>
  * <p>
  * For an example and a good starting point for learning how to use the API,
- * see the {@link #execute()} method, and follow
+ * see the {@link #main(String[]) } method, and follow
  * the code into the API from there. Alternatively, you can just browse through
  * the classes and utility methods and read their documentation and code.
  * <p>
@@ -155,6 +154,8 @@ import static java.lang.System.exit;
  */
 public class HTTPServer {
 
+    protected volatile HTTPServer server;
+
     /**
      * A convenience array containing the carriage-return and line feed chars.
      */
@@ -187,7 +188,7 @@ public class HTTPServer {
      * <p>
      * Added by: Bradley Willcott (2020/12/08)
      */
-    public static final String VERSION = "v2.5.4";
+    public static final String VERSION = "v2.5.6";
 
     /**
      * Date format string.
@@ -199,7 +200,7 @@ public class HTTPServer {
      * <p>
      * Added by: Bradley Willcott (2020/12/08)
      */
-    protected static int[] DEFAULT_PORT_RANGE =
+    protected static final int[] DEFAULT_PORT_RANGE =
     {
         9000, 9010
     };
@@ -351,66 +352,6 @@ public class HTTPServer {
         }
     }
 
-    //=====================================================================================
-    /**
-     * Starts a stand-alone HTTP server, serving files from disk.
-     */
-    public static void execute() {
-        HTTPServer server = null;
-
-        try
-        {
-            server = new HTTPServer(DEFAULT_PORT_RANGE[0]);
-
-            // set up server
-            File f = new File("/etc/mime.types");
-
-            if (f.exists())
-            {
-                addContentTypes(new FileInputStream(f));
-            } else
-            {
-                addContentTypes(HTTPServer.class.getResourceAsStream("/docs/jar/etc/mime.types"));
-            }
-
-            VirtualHost host = server.getVirtualHost(null); // default host
-            host.setAllowGeneratedIndex(true); // with directory index pages
-            host.addContext("/", new JarContextHandler(null, "/manual"));
-            host.addContext("/api/time", (Request req, Response resp) ->
-                    {
-                        long now = System.currentTimeMillis();
-                        resp.getHeaders().add("Content-Type", "text/plain");
-                        resp.send(200, String.format("Server time: %tF %<tT", now));
-                        return 0;
-                    });
-
-            server.start();
-            String msg = TITLE + " (" + VERSION + ") is listening on port " + server.port;
-            System.out.println(msg);
-            openURL(new URL("http", "localhost", server.port, "/"));
-
-            // GUI dialog to show server running, with button to
-            // shutdown server.
-            //
-            //Custom button text
-            Object[] options =
-            {
-                "Stop Server"
-            };
-            JOptionPane.showOptionDialog(null, msg, TITLE + " (" + VERSION + ")",
-                                         JOptionPane.OK_OPTION, JOptionPane.WARNING_MESSAGE,
-                                         null, options, null);
-
-            server.stop();
-            msg = TITLE + " (" + VERSION + ") on port " + server.port + " has terminated.";
-            System.out.println(msg);
-            exit(0);
-        } catch (IOException | NumberFormatException | URISyntaxException | InterruptedException e)
-        {
-            System.err.println("error: " + e);
-        }
-    } //=====================================================================================
-
     /**
      * Returns the content type for the given path, according to its suffix,
      * or the given default content type if none can be determined.
@@ -510,9 +451,14 @@ public class HTTPServer {
                 addContentTypes(HTTPServer.class.getResourceAsStream("/etc/mime.types"));
             }
 
+            // The containing 'jar' file.
+            URI jarURI = URI.create("jar:" + server.getClass().getProtectionDomain()
+                    .getCodeSource()
+                    .getLocation()
+                    .toURI().toString());
             VirtualHost host = server.getVirtualHost(null); // default host
             host.setAllowGeneratedIndex(true); // with directory index pages
-            host.addContext("/", new JarContextHandler(null, "/"));
+            host.addContext("/", new JarContextHandler(jarURI, "/"));
             host.addContext("/api/time", (Request req, Response resp) ->
                     {
                         long now = System.currentTimeMillis();
