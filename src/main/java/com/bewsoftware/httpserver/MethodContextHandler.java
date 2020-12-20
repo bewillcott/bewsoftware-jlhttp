@@ -32,7 +32,7 @@ import java.lang.reflect.Method;
  * The method must have the same signature and contract as
  * {@link ContextHandler#serve}, but can have an arbitrary name.
  *
- * @see VirtualHost#addContexts(Object)
+ * @see VirtualHost#addContexts(AutoCloseable)
  *
  * @author <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
  *
