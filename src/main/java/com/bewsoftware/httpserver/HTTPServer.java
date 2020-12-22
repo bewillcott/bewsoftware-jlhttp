@@ -188,7 +188,7 @@ public class HTTPServer {
      * <p>
      * Added by: Bradley Willcott (2020/12/08)
      */
-    public static final String VERSION = "v2.5.6";
+    public static final String VERSION = "v2.5.7";
 
     /**
      * Date format string.
@@ -459,7 +459,7 @@ public class HTTPServer {
             VirtualHost host = server.getVirtualHost(null); // default host
             host.setAllowGeneratedIndex(true); // with directory index pages
             host.addContext("/", new JarContextHandler(jarURI, "/"));
-            host.addContext("/api/time", (Request req, Response resp) ->
+            host.addContext("/time", (Request req, Response resp) ->
                     {
                         long now = System.currentTimeMillis();
                         resp.getHeaders().add("Content-Type", "text/plain");

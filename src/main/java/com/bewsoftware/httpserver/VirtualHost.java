@@ -151,11 +151,14 @@ public class VirtualHost {
         // all context paths are without trailing slash
         for (path = trimRight(path, '/'); path != null; path = FileUtils.getParentPath(path))
         {
-            ContextInfo info = contexts.get(path);
-
-            if (info != null)
+            for (; path != null; path = FileUtils.getParentPath(path))
             {
-                return info;
+                ContextInfo info = contexts.get(path);
+
+                if (info != null)
+                {
+                    return info;
+                }
             }
         }
 
