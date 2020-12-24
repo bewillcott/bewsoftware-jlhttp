@@ -384,7 +384,7 @@ public class NetUtils {
         Headers respHeaders = resp.getHeaders();
         switch (status)
         {
-            case 304: // no other arrHeader or body allowed
+            case 304: // no other headers or body allowed
                 respHeaders.add("ETag", etag);
                 respHeaders.add("Vary", "Accept-Encoding");
                 respHeaders.add("Last-Modified", formatDate(lastModified));

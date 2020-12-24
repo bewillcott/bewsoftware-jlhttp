@@ -321,12 +321,15 @@ public class Response implements Closeable {
             throw new IOException("headers were already sent");
         }
 
+        // BW:
+        addNoCachingHeaders();
+
         if (!headers.contains("Date"))
         {
             headers.add("Date", formatDate(System.currentTimeMillis()));
         }
 
-        headers.add("Server", "JLHTTP/2.5");
+        headers.add("Server", HTTPServer.SERVER);
         out.write(getBytes("HTTP/1.1 ", Integer.toString(status), " ", statuses[status]));
         out.write(CRLF);
         headers.writeTo(out);
@@ -398,7 +401,7 @@ public class Response implements Closeable {
             }
         }
 
-        if (!headers.contains("Vary")) // RFC7231#7.1.4: Vary field should include arrHeader
+        if (!headers.contains("Vary")) // RFC7231#7.1.4: Vary field should include headers
         {
             headers.add("Vary", "Accept-Encoding"); // that are used in selecting representation
         }
@@ -420,5 +423,16 @@ public class Response implements Closeable {
         }
 
         sendHeaders(status);
+    }
+
+    /**
+     * Adds a number of headers designed to prevent the browser from caching the files.
+     * <p>
+     * Bradley Willcott (24/12/2020)
+     */
+    private void addNoCachingHeaders() {
+        headers.add("Cache-Control", "max-age=0,no-cache,no-store,must-revalidate");
+        headers.add("Pragma", "no-cache");
+        headers.add("Expires", "Tue, 01 Jan 1970 00:00:00 GMT");
     }
 }

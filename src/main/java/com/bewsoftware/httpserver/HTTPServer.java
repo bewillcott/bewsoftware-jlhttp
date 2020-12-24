@@ -154,8 +154,6 @@ import static java.lang.System.exit;
  */
 public class HTTPServer {
 
-    protected volatile HTTPServer server;
-
     /**
      * A convenience array containing the carriage-return and line feed chars.
      */
@@ -175,6 +173,10 @@ public class HTTPServer {
         "EEEE, dd-MMM-yy HH:mm:ss z", // RFC 850, obsoleted by RFC 1036
         "EEE MMM d HH:mm:ss yyyy"      // ANSI C's asctime() format
     };
+    /**
+     * Response HTTP Header: "Server" setting.
+     */
+    public static final String SERVER = "JLHTTP/2.5.7";
 
     /**
      * Program title.
@@ -530,6 +532,7 @@ public class HTTPServer {
     protected volatile int port;
     protected volatile boolean secure;
     protected volatile ServerSocket serv;
+    protected volatile HTTPServer server;
     protected volatile ServerSocketFactory serverSocketFactory;
     protected volatile int socketTimeout = 1000;
 
