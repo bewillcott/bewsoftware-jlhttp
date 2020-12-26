@@ -608,7 +608,8 @@ public class NetUtils {
                 {
                     if (expect.equalsIgnoreCase("100-continue"))
                     {
-                        Response tempResp = new Response(resp.getOutputStream());
+                        // BW: (24/12/2020)
+                        Response tempResp = new Response(resp.getOutputStream(), resp.disallowCaching);
                         tempResp.sendHeaders(100);
                         resp.getOutputStream().flush();
                     } else

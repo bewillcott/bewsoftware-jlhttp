@@ -47,6 +47,7 @@ import static com.bewsoftware.httpserver.Utils.splitElements;
  */
 public class Response implements Closeable {
 
+    protected boolean disallowCaching;
     protected boolean discardBody;
     protected OutputStream[] encoders = new OutputStream[4]; // chained encoder streams
     protected Headers headers;
@@ -57,10 +58,12 @@ public class Response implements Closeable {
     /**
      * Constructs a Response whose output is written to the given stream.
      *
-     * @param out the stream to which the response is written
+     * @param out             the stream to which the response is written
+     * @param disallowCaching Disallow browser file caching.
      */
-    public Response(OutputStream out) {
+    public Response(OutputStream out, boolean disallowCaching) {
         this.out = out;
+        this.disallowCaching = disallowCaching;
         this.headers = new Headers();
     }
 
@@ -322,7 +325,10 @@ public class Response implements Closeable {
         }
 
         // BW:
-        addNoCachingHeaders();
+        if (disallowCaching)
+        {
+            addNoCachingHeaders();
+        }
 
         if (!headers.contains("Date"))
         {
