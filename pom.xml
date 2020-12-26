@@ -9,7 +9,7 @@
     <version>2.5.7</version>
     <packaging>jar</packaging>
 
-    <name>BEWSoftware JLHTTP</name>
+    <name>BEWSoftware JLHTTP Server</name>
     <description>The Java Lightweight HTTP Server</description>
     <url>http://www.freeutils.net/source/jlhttp/</url>
     <licenses>

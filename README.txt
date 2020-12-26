@@ -1,5 +1,4 @@
 
-
 JLHTTP - Java Lightweight HTTP Server 2.5
 =========================================
 
@@ -103,4 +102,4 @@ Copyright © 2005-2019 Amichai Rothman
     this server useful and you'd like it to keep being maintained.
 
     Updates and additional info can be found at
-    http://www.freeutils.net/source/jlhttp/
+    https://www.freeutils.net/source/jlhttp/
