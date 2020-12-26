@@ -69,9 +69,6 @@ public class JarContextHandler implements ContextHandler, AutoCloseable {
      */
     public JarContextHandler(URI jarURI, String dir) throws IOException, URISyntaxException {
         this.jarURI = jarURI;
-
-        System.out.println("jaURI:\n" + jarURI);
-
         rootDir = dir != null ? dir : "";
     }
 

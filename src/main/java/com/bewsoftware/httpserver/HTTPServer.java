@@ -150,11 +150,9 @@ import static java.lang.System.exit;
  *
  * @author Amichai Rothman
  * @since 2008-07-24
- * @version 2.5.4
+ * @version 2.5.7
  */
 public class HTTPServer {
-
-    protected volatile HTTPServer server;
 
     /**
      * A convenience array containing the carriage-return and line feed chars.
@@ -175,6 +173,10 @@ public class HTTPServer {
         "EEEE, dd-MMM-yy HH:mm:ss z", // RFC 850, obsoleted by RFC 1036
         "EEE MMM d HH:mm:ss yyyy"      // ANSI C's asctime() format
     };
+    /**
+     * Response HTTP Header: "Server" setting.
+     */
+    public static final String SERVER = "JLHTTP/2.5.7";
 
     /**
      * Program title.
@@ -188,7 +190,7 @@ public class HTTPServer {
      * <p>
      * Added by: Bradley Willcott (2020/12/08)
      */
-    public static final String VERSION = "v2.5.6";
+    public static final String VERSION = "v2.5.7";
 
     /**
      * Date format string.
@@ -459,7 +461,7 @@ public class HTTPServer {
             VirtualHost host = server.getVirtualHost(null); // default host
             host.setAllowGeneratedIndex(true); // with directory index pages
             host.addContext("/", new JarContextHandler(jarURI, "/"));
-            host.addContext("/api/time", (Request req, Response resp) ->
+            host.addContext("/time", (Request req, Response resp) ->
                     {
                         long now = System.currentTimeMillis();
                         resp.getHeaders().add("Content-Type", "text/plain");
@@ -524,12 +526,20 @@ public class HTTPServer {
 
         throw new IllegalArgumentException("invalid date format: " + time);
     }
+    /**
+     * Setting to disallow web browsers caching the files sent by an instance of HTTPServer.
+     * (default: false)
+     * <p>
+     * Bradley Willcott (24/12/2020)
+     */
+    protected boolean disallowBrowserFileCaching;
 
     protected volatile Executor executor;
     protected final Map<String, VirtualHost> hosts = new ConcurrentHashMap<>();
     protected volatile int port;
     protected volatile boolean secure;
     protected volatile ServerSocket serv;
+    protected volatile HTTPServer server;
     protected volatile ServerSocketFactory serverSocketFactory;
     protected volatile int socketTimeout = 1000;
 
@@ -788,7 +798,7 @@ public class HTTPServer {
         {
             // create request and response and handle transaction
             req = null;
-            resp = new Response(out);
+            resp = new Response(out, disallowBrowserFileCaching);
             try
             {
                 req = new Request(in, this);
@@ -815,7 +825,7 @@ public class HTTPServer {
                 } else if (!resp.headersSent())
                 { // if headers were not already sent, we can send an error response
                     t.printStackTrace();
-                    resp = new Response(out); // ignore whatever headers may have already been set
+                    resp = new Response(out, disallowBrowserFileCaching); // ignore whatever headers may have already been set
                     resp.getHeaders().add("Connection", "close"); // about to close connection
                     resp.sendError(500, "Error processing request: " + t);
                 } // otherwise just abort the connection since we can't recover

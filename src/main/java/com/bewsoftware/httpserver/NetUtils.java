@@ -225,9 +225,18 @@ public class NetUtils {
     public static int serveFile(File base, String context,
                                 Request req, Response resp) throws IOException {
         String relativePath = req.getPath().substring(context.length());
+
         File file = new File(base, relativePath).getCanonicalFile();
 
-        if (!file.exists() || file.isHidden() || file.getName().startsWith("."))
+        //
+        // Added matchup with context to prevent use of non-'/' terminated contexts.
+        //
+        // Bradley Willcott (21/12/2020)
+        //
+        if (req.getPath().equals(context))
+        { // redirect to the normalized directory URL ending with '/'
+            resp.redirect(req.getBaseURL() + req.getPath() + "/", true);
+        } else if (!file.exists() || file.isHidden() || file.getName().startsWith("."))
         {
             return 404;
         } else if (!file.canRead() || !file.getPath().startsWith(base.getPath()))
@@ -284,8 +293,16 @@ public class NetUtils {
 
         Path filePath = jarFS.getPath(req.getPath().substring(context.length()));
 
-        if (!Files.exists(filePath) || Files.isHidden(filePath)
-            || filePath.startsWith("."))
+        //
+        // Added matchup with context to prevent use of non-'/' terminated contexts.
+        //
+        // Bradley Willcott (21/12/2020)
+        //
+        if (req.getPath().equals(context))
+        { // redirect to the normalized directory URL ending with '/'
+            resp.redirect(req.getBaseURL() + req.getPath() + "/", true);
+        } else if (!Files.exists(filePath) || Files.isHidden(filePath)
+                   || filePath.startsWith("."))
         {
             return 404;
         } else if (!Files.isReadable(filePath))
@@ -367,7 +384,7 @@ public class NetUtils {
         Headers respHeaders = resp.getHeaders();
         switch (status)
         {
-            case 304: // no other arrHeader or body allowed
+            case 304: // no other headers or body allowed
                 respHeaders.add("ETag", etag);
                 respHeaders.add("Vary", "Accept-Encoding");
                 respHeaders.add("Last-Modified", formatDate(lastModified));
@@ -591,7 +608,8 @@ public class NetUtils {
                 {
                     if (expect.equalsIgnoreCase("100-continue"))
                     {
-                        Response tempResp = new Response(resp.getOutputStream());
+                        // BW: (24/12/2020)
+                        Response tempResp = new Response(resp.getOutputStream(), resp.disallowCaching);
                         tempResp.sendHeaders(100);
                         resp.getOutputStream().flush();
                     } else
