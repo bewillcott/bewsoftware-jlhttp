@@ -150,7 +150,7 @@ import static java.lang.System.exit;
  *
  * @author Amichai Rothman
  * @since 2008-07-24
- * @version 2.5.7
+ * @version 2.5.8
  */
 public class HTTPServer {
 
@@ -176,7 +176,7 @@ public class HTTPServer {
     /**
      * Response HTTP Header: "Server" setting.
      */
-    public static final String SERVER = "JLHTTP/2.5.7";
+    public static final String SERVER = "JLHTTP/2.5.8";
 
     /**
      * Program title.
@@ -190,7 +190,7 @@ public class HTTPServer {
      * <p>
      * Added by: Bradley Willcott (2020/12/08)
      */
-    public static final String VERSION = "v2.5.7";
+    public static final String VERSION = "v2.5.8";
 
     /**
      * Date format string.

@@ -74,8 +74,6 @@ public class JarContextHandler implements ContextHandler, AutoCloseable {
 
     @Override
     public int serve(Request req, Response resp) throws IOException {
-        req.setPath(of(rootDir, req.getPath()).toString().replace('\\', '/'));
-
         try
         {
             if (jarFS == null)
