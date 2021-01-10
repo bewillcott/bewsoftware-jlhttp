@@ -6,7 +6,7 @@
 
     <groupId>com.bewsoftware</groupId>
     <artifactId>bewsoftware-jlhttp</artifactId>
-    <version>2.5.7</version>
+    <version>2.5.8</version>
     <packaging>jar</packaging>
 
     <name>BEWSoftware JLHTTP Server</name>
@@ -421,7 +421,7 @@
                 <plugin>
                     <groupId>com.bewsoftware.mojo</groupId>
                     <artifactId>bewsoftware-mdj-plugin</artifactId>
-                    <version>1.0.31-SNAPSHOT</version>
+                    <version>1.0.35</version>
                 </plugin>                
                 <plugin>                        
                     <groupId>com.bew.mojo</groupId>
