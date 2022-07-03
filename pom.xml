@@ -22,7 +22,7 @@
     </licenses>
 
     <properties>
-        <jar.manifest.mainClass>com.bewsoftware.httpserver.Main</jar.manifest.mainClass>
+        <jar.manifest.mainClass>com.bewsoftware.httpserver.HTTPServer</jar.manifest.mainClass>
         <docs.source>src/docs/manual</docs.source>
         <docs.target>target/docs/manual</docs.target>
         <java.version>18</java.version>

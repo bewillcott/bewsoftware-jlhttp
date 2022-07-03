@@ -1,6 +1,6 @@
 /*
  *  Copyright © 2005-2019 Amichai Rothman
- *  Copyright © 2020 Bradley Willcott
+ *  Copyright © 2020-2022 Bradley Willcott
  *
  *  This file is part of JLHTTP - the Java Lightweight HTTP Server.
  *
@@ -166,7 +166,7 @@ import static java.lang.System.exit;
  *
  * @author Amichai Rothman
  * @since 2008-07-24
- * @version 2.5.8
+ * @version 2.6.3
  */
 @SuppressWarnings("ProtectedField")
 public class HTTPServer
@@ -542,7 +542,10 @@ public class HTTPServer
                     .toURI().toString());
             VirtualHost host = server.getVirtualHost(null); // default host
             host.setAllowGeneratedIndex(true); // with directory index pages
+
             host.addContext("/", new FileContextHandler("/"));
+            host.addContext("/jar", new JarContextHandler(jarURI, "/"));
+
             host.addContext("/time", (Request req, Response resp) ->
             {
                 long now = System.currentTimeMillis();
