@@ -1,6 +1,6 @@
 /*
  *  Copyright © 2005-2019 Amichai Rothman
- *  Copyright © 2020 Bradley Willcott
+ *  Copyright © 2020-2022 Bradley Willcott
  *
  *  This file is part of JLHTTP - the Java Lightweight HTTP Server.
  *
@@ -31,13 +31,7 @@ import java.util.*;
 
 import static com.bewsoftware.httpserver.NetUtils.detectLocalHostName;
 import static com.bewsoftware.httpserver.NetUtils.readHeaders;
-import static com.bewsoftware.httpserver.Utils.parseParamsList;
-import static com.bewsoftware.httpserver.Utils.parseRange;
-import static com.bewsoftware.httpserver.Utils.parseULong;
-import static com.bewsoftware.httpserver.Utils.split;
-import static com.bewsoftware.httpserver.Utils.splitElements;
-import static com.bewsoftware.httpserver.Utils.toMap;
-import static com.bewsoftware.httpserver.Utils.trimDuplicates;
+import static com.bewsoftware.httpserver.Utils.*;
 
 /**
  * The {@code Request} class encapsulates a single HTTP request.
@@ -45,20 +39,31 @@ import static com.bewsoftware.httpserver.Utils.trimDuplicates;
  * @author <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
  *
  * @since 1.0
- * @version 2.5.3
+ * @version 2.6.3
  */
-public final class Request {
+@SuppressWarnings("PublicField")
+public final class Request
+{
 
-    protected URL baseURL; // cached value
-    protected InputStream body;
-    protected VirtualHost.ContextInfo context; // cached value
-    protected Headers headers;
-    protected VirtualHost host; // cached value
-    protected String method;
-    protected Map<String, String> params; // cached value
-    protected HTTPServer server;
-    protected URI uri;
-    protected String version;
+    public URL baseURL; // cached value
+
+    public InputStream body;
+
+    public ContextInfo context; // cached value
+
+    public Headers headers;
+
+    public VirtualHost host; // cached value
+
+    public String method;
+
+    public Map<String, String> params; // cached value
+
+    public HTTPServer server;
+
+    public URI uri;
+
+    public String version;
 
     /**
      * Constructs a Request from the data in the given input stream.
@@ -68,7 +73,8 @@ public final class Request {
      *
      * @throws IOException if an error occurs
      */
-    public Request(final InputStream in, final HTTPServer server) throws IOException {
+    public Request(final InputStream in, final HTTPServer server) throws IOException
+    {
         this.server = server;
 
         readRequestLine(in);
@@ -106,7 +112,8 @@ public final class Request {
      * @return the jarPath URL of the requested resource, or null if it
      *         is malformed
      */
-    public URL getBaseURL() {
+    public URL getBaseURL()
+    {
         if (baseURL != null)
         {
             return baseURL;
@@ -142,16 +149,19 @@ public final class Request {
      *
      * @return the input stream containing the request body
      */
-    public InputStream getBody() {
+    public InputStream getBody()
+    {
         return body;
     }
 
     /**
      * Returns the info of the context handling this request.
      *
-     * @return the info of the context handling this request, or an empty context
+     * @return the info of the context handling this request, or an empty
+     *         context
      */
-    public VirtualHost.ContextInfo getContext() {
+    public ContextInfo getContext()
+    {
         return context != null ? context : (context = getVirtualHost().getContext(getPath()));
     }
 
@@ -160,7 +170,8 @@ public final class Request {
      *
      * @return the request arrHeader
      */
-    public Headers getHeaders() {
+    public Headers getHeaders()
+    {
         return headers;
     }
 
@@ -169,7 +180,8 @@ public final class Request {
      *
      * @return the request method
      */
-    public String getMethod() {
+    public String getMethod()
+    {
         return method;
     }
 
@@ -191,13 +203,14 @@ public final class Request {
      * @throws IOException if an error occurs
      * @see #getParamsList()
      */
-    public Map<String, String> getParams() throws IOException {
+    public Map<String, String> getParams() throws IOException
+    {
         if (params == null)
         {
             params = toMap(getParamsList());
         }
 
-        return params;
+        return Collections.unmodifiableMap(params);
     }
 
     /**
@@ -218,7 +231,8 @@ public final class Request {
      * @throws IOException if an error occurs
      * @see Utils#parseParamsList(String)
      */
-    public List<String[]> getParamsList() throws IOException {
+    public List<String[]> getParamsList() throws IOException
+    {
         List<String[]> queryParams = parseParamsList(uri.getRawQuery());
         List<String[]> bodyParams = Collections.emptyList();
         String ct = headers.get("Content-Type");
@@ -239,6 +253,7 @@ public final class Request {
         }
 
         queryParams.addAll(bodyParams);
+
         return queryParams;
     }
 
@@ -248,7 +263,8 @@ public final class Request {
      *
      * @return the decoded path component of the request URI
      */
-    public String getPath() {
+    public String getPath()
+    {
         return uri.getPath();
     }
 
@@ -260,11 +276,12 @@ public final class Request {
      *
      * @throws IllegalArgumentException if the given path is malformed
      */
-    public void setPath(String path) {
+    public void setPath(String path)
+    {
         try
         {
             uri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(),
-                          trimDuplicates(path, '/'), uri.getQuery(), uri.getFragment());
+                    trimDuplicates(path, '/'), uri.getQuery(), uri.getFragment());
             context = null; // clear cached context so it will be recalculated
         } catch (URISyntaxException use)
         {
@@ -282,10 +299,12 @@ public final class Request {
      * @return the requested range, or null if the Range header
      *         is missing or invalid
      */
-    public long[] getRange(long length) {
+    public long[] getRange(long length)
+    {
         String header = headers.get("Range");
+
         return header == null || !header.startsWith("bytes=")
-               ? null : parseRange(header.substring(6), length);
+                ? null : parseRange(header.substring(6), length);
     }
 
     /**
@@ -293,7 +312,8 @@ public final class Request {
      *
      * @return the request URI
      */
-    public URI getURI() {
+    public URI getURI()
+    {
         return uri;
     }
 
@@ -302,7 +322,8 @@ public final class Request {
      *
      * @return the request version string
      */
-    public String getVersion() {
+    public String getVersion()
+    {
         return version;
     }
 
@@ -313,25 +334,11 @@ public final class Request {
      * @return the virtual host corresponding to the requested host name,
      *         or the default virtual host
      */
-    public VirtualHost getVirtualHost() {
+    public VirtualHost getVirtualHost()
+    {
         return host != null ? host
-               : (host = server.getVirtualHost(getBaseURL().getHost())) != null ? host
-                 : (host = server.getVirtualHost(null));
-    }
-
-    @Override
-    public String toString() {
-        return "Request{"
-               + "\nbaseURL=" + baseURL + ", "
-               + "\ncontext=" + context + ", "
-               + "\nheaders=" + headers + ", "
-               + "\nhost=" + host + ", "
-               + "\nmethod=" + method + ", "
-               + "\nparams=" + params + ", "
-               + "\nserver=" + server + ", "
-               + "\nuri=" + uri + ", "
-               + "\nversion=" + version
-               + "\n}";
+                : (host = server.getVirtualHost(getBaseURL().getHost())) != null ? host
+                : (host = server.getVirtualHost(null));
     }
 
     /**
@@ -341,7 +348,8 @@ public final class Request {
      *
      * @throws IOException if an error occurs or the request line is invalid
      */
-    protected void readRequestLine(InputStream in) throws IOException {
+    public void readRequestLine(InputStream in) throws IOException
+    {
         // RFC2616#4.1: should accept empty lines before request line
         // RFC2616#19.3: tolerate additional whitespace between tokens
         String line;
@@ -374,5 +382,21 @@ public final class Request {
         {
             throw new IOException("invalid URI: " + use.getMessage());
         }
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Request{"
+                + "\nbaseURL=" + baseURL + ", "
+                + "\ncontext=" + context + ", "
+                + "\nheaders=" + headers + ", "
+                + "\nhost=" + host + ", "
+                + "\nmethod=" + method + ", "
+                + "\nparams=" + params + ", "
+                + "\nserver=" + server + ", "
+                + "\nuri=" + uri + ", "
+                + "\nversion=" + version
+                + "\n}";
     }
 }

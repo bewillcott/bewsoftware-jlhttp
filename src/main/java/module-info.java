@@ -21,7 +21,7 @@
  * @author <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
  *
  * @since 1.0
- * @version 2.5.4
+ * @version 2.6.3
  */
 module bewsoftware.jlhttp {
     requires java.desktop;

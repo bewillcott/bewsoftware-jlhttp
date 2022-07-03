@@ -1,6 +1,6 @@
 /*
  *  Copyright © 2005-2019 Amichai Rothman
- *  Copyright © 2020 Bradley Willcott
+ *  Copyright © 2020-2022 Bradley Willcott
  *
  *  This file is part of JLHTTP - the Java Lightweight HTTP Server.
  *
@@ -44,16 +44,24 @@ import static java.lang.String.join;
  * @author <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
  *
  * @since 2.5.3
- * @version 2.5.3
+ * @version 2.6.3
  */
-public class NetUtils {
+public class NetUtils
+{
+    /**
+     * Not meant to be instantiated.
+     */
+    private NetUtils()
+    {
+    }
 
     /**
      * Returns the local host's auto-detected name.
      *
      * @return the local host name
      */
-    public static String detectLocalHostName() {
+    public static String detectLocalHostName()
+    {
         try
         {
             return InetAddress.getLocalHost().getCanonicalHostName();
@@ -74,7 +82,8 @@ public class NetUtils {
      *
      * @return the appropriate response status for the request
      */
-    public static int getConditionalStatus(Request req, long lastModified, String etag) {
+    public static int getConditionalStatus(Request req, long lastModified, String etag)
+    {
         Headers headers = req.getHeaders();
         // If-Match
         String header = headers.get("If-Match");
@@ -86,10 +95,12 @@ public class NetUtils {
 
         // If-Unmodified-Since
         Date date = headers.getDate("If-Unmodified-Since");
+
         if (date != null && lastModified > date.getTime())
         {
             return 412;
         }
+
         // If-Modified-Since
         int status = 200;
         boolean force = false;
@@ -114,7 +125,7 @@ public class NetUtils {
             if (match(false, splitElements(header, false), etag)) // RFC7232#3.2: use weak matching
             {
                 status = req.getMethod().equals("GET")
-                         || req.getMethod().equals("HEAD") ? 304 : 412;
+                        || req.getMethod().equals("HEAD") ? 304 : 412;
             } else
             {
                 force = true;
@@ -132,7 +143,8 @@ public class NetUtils {
      *
      * @throws IOException if an error occurs
      */
-    public static void handleTrace(Request req, Response resp) throws IOException {
+    public static void handleTrace(Request req, Response resp) throws IOException
+    {
         resp.sendHeaders(200, -1, -1, null, "message/http", null);
         OutputStream out = resp.getBody();
         out.write(getBytes("TRACE ", req.getURI().toString(), " ", req.getVersion()));
@@ -154,7 +166,12 @@ public class NetUtils {
      * @throws IOException if an IO error occurs or the arrHeader are malformed
      *                     or there are more than 100 header lines
      */
-    public static Headers readHeaders(InputStream in) throws IOException {
+    @SuppressWarnings(
+            {
+                "empty-statement", "ValueOfIncrementOrDecrementUsed"
+            })
+    public static Headers readHeaders(InputStream in) throws IOException
+    {
         Headers headers = new Headers();
         String line;
         String prevLine = "";
@@ -165,7 +182,7 @@ public class NetUtils {
             int start; // start of line data (after whitespace)
 
             for (start = 0; start < line.length()
-                            && Character.isWhitespace(line.charAt(start)); start++);
+                    && Character.isWhitespace(line.charAt(start)); start++);
 
             if (start > 0) // unfold header continuation line
             {
@@ -198,6 +215,7 @@ public class NetUtils {
                 throw new IOException("too many header lines");
             }
         }
+
         return headers;
     }
 
@@ -205,7 +223,8 @@ public class NetUtils {
      * Serves a context's contents from a file based resource.
      * <p>
      * The file is located by stripping the given context prefix from
-     * the request's path, and appending the result to the given jarPath directory.
+     * the request's path, and appending the result to the given jarPath
+     * directory.
      * <p>
      * Missing, forbidden and otherwise invalid files return the appropriate
      * error response. Directories are served as an HTML index page if the
@@ -223,7 +242,8 @@ public class NetUtils {
      * @throws IOException if an error occurs
      */
     public static int serveFile(File base, String context,
-                                Request req, Response resp) throws IOException {
+            Request req, Response resp) throws IOException
+    {
         String relativePath = req.getPath().substring(context.length());
 
         File file = new File(base, relativePath).getCanonicalFile();
@@ -271,7 +291,8 @@ public class NetUtils {
      * Serves a context's contents from a 'jar' file based resource.
      * <p>
      * The file is located by stripping the given context prefix from
-     * the request's path, and appending the result to the given jarPath directory.
+     * the request's path, and appending the result to the given jarPath
+     * directory.
      * <p>
      * Missing, forbidden and otherwise invalid files return the appropriate
      * error response. Directories are served as an HTML index page if the
@@ -289,7 +310,8 @@ public class NetUtils {
      * @throws IOException if an error occurs
      */
     public static int serveFile(FileSystem jarFS, String context,
-                                Request req, Response resp) throws IOException {
+            Request req, Response resp) throws IOException
+    {
 
         Path filePath = jarFS.getPath(req.getPath().substring(context.length()));
 
@@ -302,7 +324,7 @@ public class NetUtils {
         { // redirect to the normalized directory URL ending with '/'
             resp.redirect(req.getBaseURL() + req.getPath() + "/", true);
         } else if (!Files.exists(filePath) || Files.isHidden(filePath)
-                   || filePath.startsWith("."))
+                || filePath.startsWith("."))
         {
             return 404;
         } else if (!Files.isReadable(filePath))
@@ -338,7 +360,8 @@ public class NetUtils {
      *
      * @throws IOException if an error occurs
      */
-    public static void serveFileContent(File file, Request req, Response resp) throws IOException {
+    public static void serveFileContent(File file, Request req, Response resp) throws IOException
+    {
         long len = file.length();
         long lastModified = file.lastModified();
         String etag = "W/\"" + lastModified + "\""; // a weak tag based on date
@@ -352,6 +375,7 @@ public class NetUtils {
         } else
         {
             String ifRange = req.getHeaders().get("If-Range");
+
             if (ifRange == null)
             {
                 if (range[0] >= len)
@@ -382,25 +406,32 @@ public class NetUtils {
         }
         // send the response
         Headers respHeaders = resp.getHeaders();
+
         switch (status)
         {
-            case 304: // no other headers or body allowed
+            case 304 ->
+            {
+                // no other headers or body allowed
                 respHeaders.add("ETag", etag);
                 respHeaders.add("Vary", "Accept-Encoding");
                 respHeaders.add("Last-Modified", formatDate(lastModified));
                 resp.sendHeaders(304);
-                break;
-            case 412:
+            }
+
+            case 412 ->
                 resp.sendHeaders(412);
-                break;
-            case 416:
+
+            case 416 ->
+            {
                 respHeaders.add("Content-Range", "bytes */" + len);
                 resp.sendHeaders(416);
-                break;
-            case 200:
+            }
+
+            case 200 ->
+            {
                 // send OK response
                 resp.sendHeaders(200, len, lastModified, etag,
-                                 getContentType(file.getName(), "application/octet-stream"), range);
+                        getContentType(file.getName(), "application/octet-stream"), range);
                 // send body
                 InputStream in = new FileInputStream(file);
                 try
@@ -410,10 +441,10 @@ public class NetUtils {
                 {
                     in.close();
                 }
-                break;
-            default:
+            }
+
+            default ->
                 resp.sendHeaders(500); // should never happen
-                break;
         }
     }
 
@@ -428,7 +459,8 @@ public class NetUtils {
      *
      * @throws IOException if an error occurs
      */
-    public static void serveFileContent(Path file, Request req, Response resp) throws IOException {
+    public static void serveFileContent(Path file, Request req, Response resp) throws IOException
+    {
 
         long len = Files.size(file);
         long lastModified = Files.getLastModifiedTime(file).toMillis();
@@ -443,6 +475,7 @@ public class NetUtils {
         } else
         {
             String ifRange = req.getHeaders().get("If-Range");
+
             if (ifRange == null)
             {
                 if (range[0] >= len)
@@ -473,39 +506,42 @@ public class NetUtils {
         }
         // send the response
         Headers respHeaders = resp.getHeaders();
+
         switch (status)
         {
-            case 304: // no other headers or body allowed
+            case 304 ->
+            {
+                // no other headers or body allowed
                 respHeaders.add("ETag", etag);
                 respHeaders.add("Vary", "Accept-Encoding");
                 respHeaders.add("Last-Modified", formatDate(lastModified));
                 resp.sendHeaders(304);
-                break;
+            }
 
-            case 412:
+            case 412 ->
                 resp.sendHeaders(412);
-                break;
 
-            case 416:
+            case 416 ->
+            {
                 respHeaders.add("Content-Range", "bytes */" + len);
                 resp.sendHeaders(416);
-                break;
+            }
 
-            case 200:
+            case 200 ->
+            {
                 // send OK response
                 resp.sendHeaders(200, len, lastModified, etag,
-                                 getContentType(file.getFileName().toString(),
-                                                "application/octet-stream"), range);
+                        getContentType(file.getFileName().toString(),
+                                "application/octet-stream"), range);
                 // send body
                 try ( InputStream in = Files.newInputStream(file))
                 {
                     resp.sendBody(in, len, range);
                 }
-                break;
+            }
 
-            default:
+            default ->
                 resp.sendHeaders(500); // should never happen
-                break;
         }
     }
 
@@ -517,7 +553,8 @@ public class NetUtils {
      *
      * @throws IOException if and error occurs
      */
-    protected static void handleMethod(Request req, Response resp) throws IOException {
+    protected static void handleMethod(Request req, Response resp) throws IOException
+    {
         String method = req.getMethod();
         Map<String, ContextHandler> handlers = req.getContext().getHandlers();
 
@@ -568,7 +605,8 @@ public class NetUtils {
      *
      * @throws IOException if and error occurs
      */
-    protected static void handleTransaction(Request req, Response resp) throws IOException {
+    protected static void handleTransaction(Request req, Response resp) throws IOException
+    {
         resp.setClientCapabilities(req);
 
         if (preprocessTransaction(req, resp))
@@ -589,14 +627,16 @@ public class NetUtils {
      *
      * @throws IOException if an error occurs
      */
-    protected static boolean preprocessTransaction(Request req, Response resp) throws IOException {
+    protected static boolean preprocessTransaction(Request req, Response resp) throws IOException
+    {
         Headers reqHeaders = req.getHeaders();
         // validate request
         String version = req.getVersion();
 
         switch (version)
         {
-            case "HTTP/1.1":
+            case "HTTP/1.1" ->
+            {
                 if (!reqHeaders.contains("Host"))
                 {
                     // RFC2616#14.23: missing Host header gets 400
@@ -619,22 +659,24 @@ public class NetUtils {
                         return false;
                     }
                 }
-                break;
+            }
 
-            case "HTTP/1.0":
-            case "HTTP/0.9":
+            case "HTTP/1.0", "HTTP/0.9" ->
+            {
                 // RFC2616#14.10 - remove connection headers from older versions
                 for (String token : splitElements(reqHeaders.get("Connection"), false))
                 {
                     reqHeaders.remove(token);
                 }
+            }
 
-                break;
-
-            default:
+            default ->
+            {
                 resp.sendError(400, "Unknown version: " + version);
                 return false;
+            }
         }
+
         return true;
     }
 
@@ -647,7 +689,8 @@ public class NetUtils {
      *
      * @throws IOException if an error occurs
      */
-    protected static void serve(Request req, Response resp) throws IOException {
+    protected static void serve(Request req, Response resp) throws IOException
+    {
         // get context handler to handle request
         ContextHandler handler = req.getContext().getHandlers().get(req.getMethod());
 
@@ -683,11 +726,5 @@ public class NetUtils {
         {
             resp.sendError(status);
         }
-    }
-
-    /**
-     * Not meant to be instantiated.
-     */
-    private NetUtils() {
     }
 }

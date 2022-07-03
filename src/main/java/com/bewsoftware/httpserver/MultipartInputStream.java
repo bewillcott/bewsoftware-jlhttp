@@ -41,14 +41,22 @@ import static com.bewsoftware.httpserver.HTTPServer.CRLF;
  * @since 1.0
  * @version 2.5.3
  */
-public class MultipartInputStream extends FilterInputStream {
+@SuppressWarnings("ProtectedField")
+public class MultipartInputStream extends FilterInputStream
+{
 
     protected final byte[] boundary; // including leading CRLF--
+
     protected final byte[] buf = new byte[4096];
+
     protected int end; // last index of input data read into buf
+
     protected int head; // index of current part's data in buf
+
     protected int len; // length of found boundary
+
     protected int state; // initial, started data, start boundary, EOS, last boundary, epilogue
+
     protected int tail; // index of current part's data in buf
 
     /**
@@ -61,7 +69,8 @@ public class MultipartInputStream extends FilterInputStream {
      * @throws IllegalArgumentException if the given boundary's size is not
      *                                  between 1 and 70
      */
-    protected MultipartInputStream(InputStream in, byte[] boundary) {
+    protected MultipartInputStream(InputStream in, byte[] boundary)
+    {
         super(in);
         int blen = boundary.length;
 
@@ -77,12 +86,14 @@ public class MultipartInputStream extends FilterInputStream {
     }
 
     @Override
-    public int available() throws IOException {
+    public int available() throws IOException
+    {
         return tail - head;
     }
 
     @Override
-    public boolean markSupported() {
+    public boolean markSupported()
+    {
         return false;
     }
 
@@ -95,7 +106,9 @@ public class MultipartInputStream extends FilterInputStream {
      *
      * @throws IOException if an error occurs
      */
-    public boolean nextPart() throws IOException {
+    @SuppressWarnings("empty-statement")
+    public boolean nextPart() throws IOException
+    {
         while (skip(buf.length) != 0); // skip current part (until boundary)
 
         head = tail += len; // the next part starts right after boundary
@@ -108,11 +121,14 @@ public class MultipartInputStream extends FilterInputStream {
         }
 
         findBoundary(); // update indices
+
         return true;
     }
 
     @Override
-    public int read() throws IOException {
+    @SuppressWarnings("ValueOfIncrementOrDecrementUsed")
+    public int read() throws IOException
+    {
         if (!fill())
         {
             return -1;
@@ -122,7 +138,9 @@ public class MultipartInputStream extends FilterInputStream {
     }
 
     @Override
-    public int read(byte[] b, int off, int len) throws IOException {
+    @SuppressWarnings("AssignmentToMethodParameter")
+    public int read(byte[] b, int off, int len) throws IOException
+    {
         if (!fill())
         {
             return -1;
@@ -131,11 +149,14 @@ public class MultipartInputStream extends FilterInputStream {
         len = Math.min(tail - head, len);
         System.arraycopy(buf, head, b, off, len); // throws IOOBE as necessary
         head += len;
+
         return len;
     }
 
     @Override
-    public long skip(long len) throws IOException {
+    @SuppressWarnings("AssignmentToMethodParameter")
+    public long skip(long len) throws IOException
+    {
         if (len <= 0 || !fill())
         {
             return 0;
@@ -143,6 +164,7 @@ public class MultipartInputStream extends FilterInputStream {
 
         len = Math.min(tail - head, len);
         head += len;
+
         return len;
     }
 
@@ -154,7 +176,8 @@ public class MultipartInputStream extends FilterInputStream {
      *
      * @throws IOException if an error occurs or the input format is invalid
      */
-    protected boolean fill() throws IOException {
+    protected boolean fill() throws IOException
+    {
         // check if we already have more available data
         if (head != tail) // remember that if we continue, head == tail below
         {
@@ -181,6 +204,7 @@ public class MultipartInputStream extends FilterInputStream {
             {
                 end += read;
             }
+
             findBoundary(); // updates tail and length to next potential boundary
             // if we found a partial boundary with no data before it, we must
             // continue reading to determine if there is more data or not
@@ -198,8 +222,8 @@ public class MultipartInputStream extends FilterInputStream {
         }
 
         if ((state & 6) == 4 // EOS but no start boundary found
-            || len == 0 && ((state & 0xFC) == 4 // EOS but no last and no more boundaries
-                            || read == 0 && tail == head)) // boundary longer than buffer
+                || len == 0 && ((state & 0xFC) == 4 // EOS but no last and no more boundaries
+                || read == 0 && tail == head)) // boundary longer than buffer
         {
             throw new IOException("missing boundary");
         }
@@ -218,7 +242,8 @@ public class MultipartInputStream extends FilterInputStream {
      *
      * @throws IOException if an error occurs or the input format is invalid
      */
-    protected void findBoundary() throws IOException {
+    protected void findBoundary() throws IOException
+    {
         // see RFC2046#5.1.1 for boundary syntax
         len = 0;
         int off = tail - ((state & 1) != 0 || buf[0] != '-' ? 0 : 2); // skip initial CRLF?

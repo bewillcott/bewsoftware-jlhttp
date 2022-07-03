@@ -1,6 +1,6 @@
 /*
  *  Copyright © 2005-2019 Amichai Rothman
- *  Copyright © 2020 Bradley Willcott
+ *  Copyright © 2020-2022 Bradley Willcott
  *
  *  This file is part of JLHTTP - the Java Lightweight HTTP Server.
  *
@@ -36,9 +36,159 @@ import static com.bewsoftware.httpserver.Utils.toSizeApproxString;
  * @author <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
  *
  * @since 2.5.3
- * @version 2.5.3
+ * @version 2.6.3
  */
-public class FileUtils {
+public class FileUtils
+{
+    /**
+     * Not meant to be instantiated.
+     */
+    private FileUtils()
+    {
+    }
+
+    /**
+     * Serves the contents of a directory as an HTML file index.
+     *
+     * @param dir  the existing and readable directory whose contents are served
+     * @param path the displayed jarPath path corresponding to jarPath
+     *
+     * @return an HTML string containing the file index for the directory
+     */
+    @SuppressWarnings("AssignmentToMethodParameter")
+    public static String createIndex(File dir, String path)
+    {
+        if (!path.endsWith("/"))
+        {
+            path += "/";
+        }
+
+        // calculate name column width
+        int w = 21; // minimum width
+
+        for (String name : dir.list())
+        {
+            if (name.length() > w)
+            {
+                w = name.length();
+            }
+        }
+
+        w += 2; // with room for added slash and space
+        // note: we use apache's format, for consistent user experience
+        Formatter f = new Formatter(Locale.US);
+
+        f.format("<!DOCTYPE html>%n"
+                + "<html><head><title>Index of %s</title></head>%n"
+                + "<body><h1>Index of %s</h1>%n"
+                + "<pre> Name%" + (w - 5) + "s Last modified      Size<hr>",
+                path, path, "");
+
+        if (path.length() > 1) // add parent link if not root path
+        {
+            f.format(" <a href=\"%s/\">Parent Directory</a>%"
+                    + (w + 5) + "s-%n", getParentPath(path), "");
+        }
+
+        for (File file : sortFiles(dir.listFiles()))
+        {
+            try
+            {
+                String name = file.getName() + (file.isDirectory() ? "/" : "");
+                String size = file.isDirectory() ? "- " : toSizeApproxString(file.length());
+                // properly url-encode the link
+                String link = new URI(null, path + name, null).toASCIIString();
+
+                if (!file.isHidden() && !name.startsWith("."))
+                {
+                    f.format(" <a href=\"%s\">%s</a>%-" + (w - name.length())
+                            + "s&#8206;%td-%<tb-%<tY %<tR%6s%n",
+                            link, name, "", file.lastModified(), size);
+                }
+            } catch (URISyntaxException ignore)
+            {
+            }
+        }
+
+        f.format("</pre></body></html>");
+        return f.toString();
+    }
+
+    /**
+     * Serves the contents of a directory as an HTML file index.
+     * <p>
+     * Added by: Bradley Willcott (2020/12/08)
+     *
+     * @param dir  the existing and readable directory whose contents are served
+     * @param path the displayed jarPath path corresponding to jarPath
+     *
+     * @return an HTML string containing the file index for the directory
+     *
+     * @throws IOException if any.
+     */
+    @SuppressWarnings("AssignmentToMethodParameter")
+    public static String createIndex(Path dir, String path) throws IOException
+    {
+        if (!path.endsWith("/"))
+        {
+            path += "/";
+        }
+
+        Path[] files = Files.list(dir).toArray(Path[]::new);
+
+        // calculate name column width
+        int w = 21; // minimum width
+
+        for (Path file : files)
+        {
+            String name = file.getFileName().toString();
+
+            if (name.length() > w)
+            {
+                w = name.length();
+            }
+        }
+
+        w += 2; // with room for added slash and space
+        // note: we use apache's format, for consistent user experience
+        Formatter f = new Formatter(Locale.US);
+
+        f.format("<!DOCTYPE html>%n"
+                + "<html><head><title>Index of %s</title></head>%n"
+                + "<body><h1>Index of %s</h1>%n"
+                + "<pre> Name%" + (w - 5) + "s Last modified      Size<hr>",
+                path, path, "");
+
+        if (path.length() > 1) // add parent link if not root path
+        {
+            f.format(" <a href=\"%s/\">Parent Directory</a>%"
+                    + (w + 5) + "s-%n", getParentPath(path), "");
+        }
+
+        for (Path file : sortFiles(files))
+        {
+            try
+            {
+                String name = file.getFileName().toString() + (Files.isDirectory(file) ? "/" : "");
+                String size = Files.isDirectory(file) ? "- " : toSizeApproxString(Files.size(file));
+                // properly url-encode the link
+                String link = new URI(null, path + name, null).toASCIIString();
+
+                if (!Files.isHidden(file) && !name.startsWith("."))
+                {
+                    f.format(" <a href=\"%s\">%s</a>%-" + (w - name.length())
+                            + "s&#8206;%td-%<tb-%<tY %<tR%6s%n",
+                            link, name, "", Files.getLastModifiedTime(file).toMillis(), size);
+                }
+            } catch (URISyntaxException ignore)
+            {
+            }
+        }
+
+        f.format("</pre></body></html>");
+
+        return f.toString();
+    }
 
     /**
      *
@@ -48,7 +198,9 @@ public class FileUtils {
      * @return the parent of the given path (excluding trailing slash),
      *         or null if given path is the root path
      */
-    public static String getParentPath(String path) {
+    @SuppressWarnings("AssignmentToMethodParameter")
+    public static String getParentPath(String path)
+    {
         path = Utils.trimRight(path, '/'); // remove trailing slash
         int slash = path.lastIndexOf('/');
         return slash < 0 ? null : path.substring(0, slash);
@@ -62,11 +214,14 @@ public class FileUtils {
      * @return the read string, excluding the terminating LF character
      *         and (if exists) the CR character immediately preceding it
      *
-     * @throws EOFException if the stream end is reached before an LF character is found
-     * @throws IOException  if an IO error occurs, or the line is longer than 8192 bytes
+     * @throws EOFException if the stream end is reached before an LF character
+     *                      is found
+     * @throws IOException  if an IO error occurs, or the line is longer than
+     *                      8192 bytes
      * @see #readToken(InputStream, int, String, int)
      */
-    public static String readLine(InputStream in) throws IOException {
+    public static String readLine(InputStream in) throws IOException
+    {
         return readToken(in, '\n', "ISO8859_1", 8192);
     }
 
@@ -82,17 +237,22 @@ public class FileUtils {
      * @return the read token, excluding the delimiter
      *
      * @throws UnsupportedEncodingException if the encoding is not supported
-     * @throws EOFException                 if the stream end is reached before a delimiter is found
-     * @throws IOException                  if an IO error occurs, or the maximum length
+     * @throws EOFException                 if the stream end is reached before
+     *                                      a delimiter is found
+     * @throws IOException                  if an IO error occurs, or the
+     *                                      maximum length
      *                                      is reached before the token end is reached
      */
-    public static String readToken(InputStream in, int delim, String enc, int maxLength) throws IOException {
+    @SuppressWarnings("ValueOfIncrementOrDecrementUsed")
+    public static String readToken(InputStream in, int delim, String enc, int maxLength) throws IOException
+    {
         // note: we avoid using a ByteArrayOutputStream here because it
         // suffers the overhead of synchronization for each byte written
         int b;
         int len = 0; // buffer length
         int count = 0; // number of read bytes
         byte[] buf = null; // optimization - lazy allocation only if necessary
+
         while ((b = in.read()) != -1 && b != delim)
         {
             if (count == len)
@@ -102,25 +262,32 @@ public class FileUtils {
                 {
                     throw new IOException("token too large (" + count + ")");
                 }
+
                 len = len > 0 ? 2 * len : 256; // start small, double each expansion
                 len = maxLength < len ? maxLength : len;
                 byte[] expanded = new byte[len];
+
                 if (buf != null)
                 {
                     System.arraycopy(buf, 0, expanded, 0, count);
                 }
+
                 buf = expanded;
             }
+
             buf[count++] = (byte) b;
         }
+
         if (b < 0 && delim != -1)
         {
             throw new EOFException("unexpected end of stream");
         }
+
         if (delim == '\n' && count > 0 && buf[count - 1] == '\r')
         {
             count--;
         }
+
         return count > 0 ? new String(buf, 0, count, enc) : "";
     }
 
@@ -135,7 +302,9 @@ public class FileUtils {
      * @throws IOException if an IO error occurs or the input stream ends
      *                     before the requested number of bytes have been read
      */
-    public static void transfer(InputStream in, OutputStream out, long len) throws IOException {
+    @SuppressWarnings("AssignmentToMethodParameter")
+    public static void transfer(InputStream in, OutputStream out, long len) throws IOException
+    {
         if (len == 0 || out == null && len < 0 && in.read() < 0)
         {
             return; // small optimization - avoid buffer creation
@@ -145,6 +314,7 @@ public class FileUtils {
         {
             int count = len < 0 || buf.length < len ? buf.length : (int) len;
             count = in.read(buf, 0, count);
+
             if (count < 0)
             {
                 if (len > 0)
@@ -153,10 +323,12 @@ public class FileUtils {
                 }
                 break;
             }
+
             if (out != null)
             {
                 out.write(buf, 0, count);
             }
+
             len -= len > 0 ? count : 0;
         }
     }
@@ -183,10 +355,12 @@ public class FileUtils {
      *
      * @since 2.5.1
      */
-    private static File[] sortFiles(File[] files) {
+    private static File[] sortFiles(File[] files)
+    {
         SortedSet<File> dirSet = new TreeSet<>((file1, file2) ->
         {
             int rtn = 0;
+
             if (file1.isDirectory())
             {
                 if (file2.isDirectory())
@@ -206,10 +380,13 @@ public class FileUtils {
                     rtn = file1.compareTo(file2);
                 }
             }
+
             return rtn;
         });
+
         dirSet.addAll(Arrays.asList(files));
-        return dirSet.toArray(new File[dirSet.size()]);
+
+        return dirSet.toArray(File[]::new);
     }
 
     /**
@@ -234,10 +411,12 @@ public class FileUtils {
      *
      * @since 2.5.1
      */
-    private static Path[] sortFiles(Path[] files) {
+    private static Path[] sortFiles(Path[] files)
+    {
         SortedSet<Path> dirSet = new TreeSet<>((file1, file2) ->
         {
             int rtn = 0;
+
             if (Files.isDirectory(file1))
             {
                 if (Files.isDirectory(file2))
@@ -257,154 +436,12 @@ public class FileUtils {
                     rtn = file1.compareTo(file2);
                 }
             }
+
             return rtn;
         });
+
         dirSet.addAll(Arrays.asList(files));
-        return dirSet.toArray(new Path[dirSet.size()]);
+
+        return dirSet.toArray(Path[]::new);
     }
-
-    /**
-     * Not meant to be instantiated.
-     */
-    private FileUtils() {
-    }
-
-    /**
-     * Serves the contents of a directory as an HTML file index.
-     *
-     * @param dir  the existing and readable directory whose contents are served
-     * @param path the displayed jarPath path corresponding to jarPath
-     *
-     * @return an HTML string containing the file index for the directory
-     */
-    public static String createIndex(File dir, String path) {
-        if (!path.endsWith("/"))
-        {
-            path += "/";
-        }
-
-        // calculate name column width
-        int w = 21; // minimum width
-
-        for (String name : dir.list())
-        {
-            if (name.length() > w)
-            {
-                w = name.length();
-            }
-        }
-
-        w += 2; // with room for added slash and space
-        // note: we use apache's format, for consistent user experience
-        Formatter f = new Formatter(Locale.US);
-
-        f.format("<!DOCTYPE html>%n"
-                 + "<html><head><title>Index of %s</title></head>%n"
-                 + "<body><h1>Index of %s</h1>%n"
-                 + "<pre> Name%" + (w - 5) + "s Last modified      Size<hr>",
-                 path, path, "");
-
-        if (path.length() > 1) // add parent link if not root path
-        {
-            f.format(" <a href=\"%s/\">Parent Directory</a>%"
-                     + (w + 5) + "s-%n", getParentPath(path), "");
-        }
-
-        for (File file : sortFiles(dir.listFiles()))
-        {
-            try
-            {
-                String name = file.getName() + (file.isDirectory() ? "/" : "");
-                String size = file.isDirectory() ? "- " : toSizeApproxString(file.length());
-                // properly url-encode the link
-                String link = new URI(null, path + name, null).toASCIIString();
-
-                if (!file.isHidden() && !name.startsWith("."))
-                {
-                    f.format(" <a href=\"%s\">%s</a>%-" + (w - name.length())
-                             + "s&#8206;%td-%<tb-%<tY %<tR%6s%n",
-                             link, name, "", file.lastModified(), size);
-                }
-            } catch (URISyntaxException ignore)
-            {
-            }
-        }
-
-        f.format("</pre></body></html>");
-        return f.toString();
-    }
-
-    /**
-     * Serves the contents of a directory as an HTML file index.
-     * <p>
-     * Added by: Bradley Willcott (2020/12/08)
-     *
-     * @param dir  the existing and readable directory whose contents are served
-     * @param path the displayed jarPath path corresponding to jarPath
-     *
-     * @return an HTML string containing the file index for the directory
-     *
-     * @throws IOException if any.
-     */
-    public static String createIndex(Path dir, String path) throws IOException {
-        if (!path.endsWith("/"))
-        {
-            path += "/";
-        }
-
-        Path[] files = Files.list(dir).toArray(Path[]::new);
-
-        // calculate name column width
-        int w = 21; // minimum width
-
-        for (Path file : files)
-        {
-            String name = file.getFileName().toString();
-
-            if (name.length() > w)
-            {
-                w = name.length();
-            }
-        }
-
-        w += 2; // with room for added slash and space
-        // note: we use apache's format, for consistent user experience
-        Formatter f = new Formatter(Locale.US);
-
-        f.format("<!DOCTYPE html>%n"
-                 + "<html><head><title>Index of %s</title></head>%n"
-                 + "<body><h1>Index of %s</h1>%n"
-                 + "<pre> Name%" + (w - 5) + "s Last modified      Size<hr>",
-                 path, path, "");
-
-        if (path.length() > 1) // add parent link if not root path
-        {
-            f.format(" <a href=\"%s/\">Parent Directory</a>%"
-                     + (w + 5) + "s-%n", getParentPath(path), "");
-        }
-
-        for (Path file : sortFiles(files))
-        {
-            try
-            {
-                String name = file.getFileName().toString() + (Files.isDirectory(file) ? "/" : "");
-                String size = Files.isDirectory(file) ? "- " : toSizeApproxString(Files.size(file));
-                // properly url-encode the link
-                String link = new URI(null, path + name, null).toASCIIString();
-
-                if (!Files.isHidden(file) && !name.startsWith("."))
-                {
-                    f.format(" <a href=\"%s\">%s</a>%-" + (w - name.length())
-                             + "s&#8206;%td-%<tb-%<tY %<tR%6s%n",
-                             link, name, "", Files.getLastModifiedTime(file).toMillis(), size);
-                }
-            } catch (URISyntaxException ignore)
-            {
-            }
-        }
-
-        f.format("</pre></body></html>");
-        return f.toString();
-    }
-
 }

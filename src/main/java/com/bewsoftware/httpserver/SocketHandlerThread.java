@@ -1,6 +1,6 @@
 /*
  *  Copyright © 2005-2019 Amichai Rothman
- *  Copyright © 2020 Bradley Willcott
+ *  Copyright © 2020-2022 Bradley Willcott
  *
  *  This file is part of JLHTTP - the Java Lightweight HTTP Server.
  *
@@ -32,18 +32,22 @@ import javax.net.ssl.SSLSocket;
  * @author <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
  *
  * @since 1.0
- * @version 2.5.3
+ * @version 2.6.3
  */
-class SocketHandlerThread extends Thread {
-
+@SuppressWarnings("PackageVisibleField")
+class SocketHandlerThread extends Thread
+{
     protected HTTPServer server;
 
-    public SocketHandlerThread(HTTPServer server) {
+    SocketHandlerThread(HTTPServer server)
+    {
         this.server = server;
     }
 
     @Override
-    public void run() {
+    @SuppressWarnings("null")
+    public void run()
+    {
         setName(getClass().getSimpleName() + "-" + server.port);
         try
         {

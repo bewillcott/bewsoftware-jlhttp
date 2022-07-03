@@ -30,7 +30,6 @@ import java.nio.file.FileSystems;
 import java.util.Collections;
 
 import static com.bewsoftware.httpserver.NetUtils.serveFile;
-import static java.nio.file.Path.of;
 
 /**
  * The {@code JarContextHandler} services a context by mapping it
@@ -41,7 +40,13 @@ import static java.nio.file.Path.of;
  * @since 1.0
  * @version 2.5.3
  */
-public class JarContextHandler implements ContextHandler, AutoCloseable {
+@SuppressWarnings("ProtectedField")
+public class JarContextHandler implements ContextHandler, AutoCloseable
+{
+    /**
+     * The Jar File System.
+     */
+    protected FileSystem jarFS;
 
     /**
      * URI to the 'jar' file.
@@ -54,11 +59,6 @@ public class JarContextHandler implements ContextHandler, AutoCloseable {
     protected String rootDir;
 
     /**
-     * The Jar File System.
-     */
-    protected FileSystem jarFS;
-
-    /**
      * Instantiate a {@code JarContextHandler}.
      *
      * @param jarURI Path to the 'jar' file.
@@ -67,13 +67,24 @@ public class JarContextHandler implements ContextHandler, AutoCloseable {
      * @throws IOException        if any.
      * @throws URISyntaxException if any.
      */
-    public JarContextHandler(URI jarURI, String dir) throws IOException, URISyntaxException {
+    public JarContextHandler(URI jarURI, String dir) throws IOException, URISyntaxException
+    {
         this.jarURI = jarURI;
         rootDir = dir != null ? dir : "";
     }
 
     @Override
-    public int serve(Request req, Response resp) throws IOException {
+    public void close() throws IOException
+    {
+        if (jarFS != null)
+        {
+            jarFS.close();
+        }
+    }
+
+    @Override
+    public int serve(Request req, Response resp) throws IOException
+    {
         try
         {
             if (jarFS == null)
@@ -94,17 +105,10 @@ public class JarContextHandler implements ContextHandler, AutoCloseable {
     }
 
     @Override
-    public void close() throws IOException {
-        if (jarFS != null)
-        {
-            jarFS.close();
-        }
-    }
-
-    @Override
-    public String toString() {
+    public String toString()
+    {
         return "JarContextHandler{"
-               + "\njarURI=" + jarURI + ", "
-               + "\nrootDir=" + rootDir + '}';
+                + "\njarURI=" + jarURI + ", "
+                + "\nrootDir=" + rootDir + '}';
     }
 }

@@ -36,32 +36,12 @@ import static com.bewsoftware.httpserver.Utils.parseULong;
  * @since 1.0
  * @version 2.5.3
  */
-public class ChunkedInputStream extends LimitedInputStream {
-
-    /**
-     * Parses a chunk-size line.
-     *
-     * @param line the chunk-size line to parse
-     *
-     * @return the chunk size
-     *
-     * @throws IllegalArgumentException if the chunk-size line is invalid
-     */
-    protected static long parseChunkSize(String line) throws IllegalArgumentException {
-        int pos = line.indexOf(';');
-        line = pos < 0 ? line : line.substring(0, pos); // ignore params, if any
-
-        try
-        {
-            return parseULong(line, 16); // throws NFE
-        } catch (NumberFormatException nfe)
-        {
-            throw new IllegalArgumentException(
-                    "invalid chunk size line: \"" + line + "\"");
-        }
-    }
+@SuppressWarnings("ProtectedField")
+public class ChunkedInputStream extends LimitedInputStream
+{
 
     protected Headers headers;
+
     protected boolean initialized;
 
     /**
@@ -75,18 +55,46 @@ public class ChunkedInputStream extends LimitedInputStream {
      *
      * @throws NullPointerException if the given stream is null
      */
-    public ChunkedInputStream(InputStream in, Headers headers) {
+    public ChunkedInputStream(InputStream in, Headers headers)
+    {
         super(in, 0, true);
         this.headers = headers;
     }
 
+    /**
+     * Parses a chunk-size line.
+     *
+     * @param line the chunk-size line to parse
+     *
+     * @return the chunk size
+     *
+     * @throws IllegalArgumentException if the chunk-size line is invalid
+     */
+    @SuppressWarnings("AssignmentToMethodParameter")
+    protected static long parseChunkSize(String line) throws IllegalArgumentException
+    {
+        int pos = line.indexOf(';');
+        line = pos < 0 ? line : line.substring(0, pos); // ignore params, if any
+
+        try
+        {
+            return parseULong(line, 16); // throws NFE
+        } catch (NumberFormatException nfe)
+        {
+            throw new IllegalArgumentException(
+                    "invalid chunk size line: \"" + line + "\"");
+        }
+    }
+
     @Override
-    public int read() throws IOException {
+    public int read() throws IOException
+    {
         return limit <= 0 && initChunk() < 0 ? -1 : super.read();
     }
 
     @Override
-    public int read(byte[] b, int off, int len) throws IOException {
+    public int read(byte[] b, int off, int len) throws IOException
+    {
         return limit <= 0 && initChunk() < 0 ? -1 : super.read(b, off, len);
     }
 
@@ -99,7 +107,8 @@ public class ChunkedInputStream extends LimitedInputStream {
      *
      * @throws IOException if an IO error occurs or the stream is corrupt
      */
-    protected long initChunk() throws IOException {
+    protected long initChunk() throws IOException
+    {
         if (limit == 0)
         { // finished previous chunk
             // read chunk-terminating CRLF if it's not the first chunk

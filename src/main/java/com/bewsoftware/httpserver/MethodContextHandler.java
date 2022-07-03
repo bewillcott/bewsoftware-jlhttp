@@ -39,9 +39,11 @@ import java.lang.reflect.Method;
  * @since 1.0
  * @version 2.5.3
  */
-public class MethodContextHandler implements ContextHandler, AutoCloseable {
+public class MethodContextHandler implements ContextHandler, AutoCloseable
+{
 
     protected final Method m;
+
     protected final Object obj;
 
     /**
@@ -52,7 +54,8 @@ public class MethodContextHandler implements ContextHandler, AutoCloseable {
      * <li>{@code obj} changed from {@link Object} to {@link AutoCloseable} to
      * facilitate the use of file systems other than the default. Such may
      * require closing before the server application is completely shutdown,
-     * perhaps to have the opportunity to flush buffers to permanent storage.</li>
+     * perhaps to have the opportunity to flush buffers to permanent
+     * storage.</li>
      * </ul>
      * Bradley Willcott (2020/12/19)
      *
@@ -62,15 +65,16 @@ public class MethodContextHandler implements ContextHandler, AutoCloseable {
      *
      * @throws IllegalArgumentException if any.
      */
-    public MethodContextHandler(Method m, AutoCloseable obj) throws IllegalArgumentException {
+    public MethodContextHandler(Method m, AutoCloseable obj) throws IllegalArgumentException
+    {
         this.m = m;
         this.obj = obj;
         Class<?>[] params = m.getParameterTypes();
 
         if (params.length != 2
-            || !Request.class.isAssignableFrom(params[0])
-            || !Response.class.isAssignableFrom(params[1])
-            || !int.class.isAssignableFrom(m.getReturnType()))
+                || !Request.class.isAssignableFrom(params[0])
+                || !Response.class.isAssignableFrom(params[1])
+                || !int.class.isAssignableFrom(m.getReturnType()))
         {
             throw new IllegalArgumentException("invalid method signature: " + m);
         }
@@ -89,7 +93,8 @@ public class MethodContextHandler implements ContextHandler, AutoCloseable {
     }
 
     @Override
-    public int serve(Request req, Response resp) throws IOException {
+    public int serve(Request req, Response resp) throws IOException
+    {
         try
         {
             return (Integer) m.invoke(obj, req, resp);

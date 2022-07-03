@@ -757,7 +757,7 @@ public class HTTPServer
 
         hosts.values().forEach((VirtualHost host) ->
         {
-            host.contexts.values().forEach((VirtualHost.ContextInfo context) ->
+            host.contexts.values().forEach((ContextInfo context) ->
             {
                 context.handlers.values().forEach((ContextHandler handler) ->
                 {

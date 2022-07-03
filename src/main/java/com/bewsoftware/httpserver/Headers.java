@@ -71,6 +71,7 @@ public class Headers implements Iterable<Header>
      * @param name  the header name (case insensitive)
      * @param value the header value
      */
+    @SuppressWarnings("ValueOfIncrementOrDecrementUsed")
     public void add(String name, String value)
     {
         Header header = new Header(name, value); // also validates
@@ -193,6 +194,7 @@ public class Headers implements Iterable<Header>
      *
      * @param name the header name (case insensitive)
      */
+    @SuppressWarnings("ValueOfIncrementOrDecrementUsed")
     public void remove(String name)
     {
         int j = 0;
@@ -264,5 +266,4 @@ public class Headers implements Iterable<Header>
 
         out.write(CRLF); // ends header block
     }
-
 }

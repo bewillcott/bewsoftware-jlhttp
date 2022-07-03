@@ -45,14 +45,22 @@ import static com.bewsoftware.httpserver.Utils.splitElements;
  * @since 1.0
  * @version 2.5.3
  */
-public class Response implements Closeable {
+@SuppressWarnings("ProtectedField")
+public class Response implements Closeable
+{
 
     protected boolean disallowCaching;
+
     protected boolean discardBody;
+
     protected OutputStream[] encoders = new OutputStream[4]; // chained encoder streams
+
     protected Headers headers;
+
     protected OutputStream out; // the underlying output stream
+
     protected Request req; // request used in determining client capabilities
+
     protected int state; // nothing sent, arrHeader sent, or closed
 
     /**
@@ -61,7 +69,8 @@ public class Response implements Closeable {
      * @param out             the stream to which the response is written
      * @param disallowCaching Disallow browser file caching.
      */
-    public Response(OutputStream out, boolean disallowCaching) {
+    public Response(OutputStream out, boolean disallowCaching)
+    {
         this.out = out;
         this.disallowCaching = disallowCaching;
         this.headers = new Headers();
@@ -73,7 +82,8 @@ public class Response implements Closeable {
      * @throws IOException if an error occurs
      */
     @Override
-    public void close() throws IOException {
+    public void close() throws IOException
+    {
         state = -1; // closed
 
         if (encoders[0] != null)
@@ -86,19 +96,24 @@ public class Response implements Closeable {
 
     /**
      * Returns an output stream into which the response body can be written.
-     * The stream applies encodings (e.g. compression) according to the sent headers.
+     * The stream applies encodings (e.g. compression) according to the sent
+     * headers.
      * This method must be called after response headers have been sent
      * that indicate there is a body. Normally, the content should be
      * prepared (not sent) even before the headers are sent, so that any
-     * errors during processing can be caught and a proper error response returned -
-     * after the headers are sent, it's too late to change the status into an error.
+     * errors during processing can be caught and a proper error response
+     * returned -
+     * after the headers are sent, it's too late to change the status into an
+     * error.
      *
      * @return an output stream into which the response body can be written,
      *         or null if the body should not be written (e.g. it is discarded)
      *
      * @throws IOException if an error occurs
      */
-    public OutputStream getBody() throws IOException {
+    @SuppressWarnings("ValueOfIncrementOrDecrementUsed")
+    public OutputStream getBody() throws IOException
+    {
         if (encoders[0] != null || discardBody)
         {
             return encoders[0]; // return the existing stream (or null)
@@ -108,13 +123,16 @@ public class Response implements Closeable {
         List<String> ce = Arrays.asList(splitElements(headers.get("Content-Encoding"), true));
         int i = encoders.length - 1;
 
-        encoders[i] = new FilterOutputStream(out) {
+        encoders[i] = new FilterOutputStream(out)
+        {
             @Override
-            public void close() {
+            public void close()
+            {
             } // keep underlying connection stream open for now
 
             @Override // override the very inefficient default implementation
-            public void write(byte[] b, int off, int len) throws IOException {
+            public void write(byte[] b, int off, int len) throws IOException
+            {
                 out.write(b, off, len);
             }
         };
@@ -134,6 +152,7 @@ public class Response implements Closeable {
 
         encoders[0] = encoders[i];
         encoders[i] = null; // prevent duplicate reference
+
         return encoders[0]; // returned stream is always first
     }
 
@@ -143,7 +162,8 @@ public class Response implements Closeable {
      *
      * @param req the request
      */
-    public void setClientCapabilities(Request req) {
+    public void setClientCapabilities(Request req)
+    {
         this.req = req;
     }
 
@@ -152,7 +172,8 @@ public class Response implements Closeable {
      *
      * @param discardBody specifies whether the body is discarded or not
      */
-    public void setDiscardBody(boolean discardBody) {
+    public void setDiscardBody(boolean discardBody)
+    {
         this.discardBody = discardBody;
     }
 
@@ -161,7 +182,8 @@ public class Response implements Closeable {
      *
      * @return the request arrHeader collection
      */
-    public Headers getHeaders() {
+    public Headers getHeaders()
+    {
         return headers;
     }
 
@@ -171,7 +193,8 @@ public class Response implements Closeable {
      *
      * @return the underlying output stream to which the response is written
      */
-    public OutputStream getOutputStream() {
+    public OutputStream getOutputStream()
+    {
         return out;
     }
 
@@ -180,7 +203,8 @@ public class Response implements Closeable {
      *
      * @return whether the response arrHeader were already sent
      */
-    public boolean headersSent() {
+    public boolean headersSent()
+    {
         return state == 1;
     }
 
@@ -193,7 +217,9 @@ public class Response implements Closeable {
      *
      * @throws IOException if an IO error occurs or url is malformed
      */
-    public void redirect(String url, boolean permanent) throws IOException {
+    @SuppressWarnings("AssignmentToMethodParameter")
+    public void redirect(String url, boolean permanent) throws IOException
+    {
         try
         {
             url = new URI(url).toASCIIString();
@@ -226,11 +252,12 @@ public class Response implements Closeable {
      *
      * @throws IOException if an error occurs
      */
-    public void send(int status, String text) throws IOException {
+    public void send(int status, String text) throws IOException
+    {
         byte[] content = text.getBytes("UTF-8");
         sendHeaders(status, content.length, -1,
-                    "W/\"" + Integer.toHexString(text.hashCode()) + "\"",
-                    "text/html; charset=utf-8", null);
+                "W/\"" + Integer.toHexString(text.hashCode()) + "\"",
+                "text/html; charset=utf-8", null);
         OutputStream outputStream = getBody();
 
         if (outputStream != null)
@@ -244,13 +271,16 @@ public class Response implements Closeable {
      * response headers have been sent (and indicate that there is a body).
      *
      * @param body   a stream containing the response body
-     * @param length the full length of the response body, or -1 for the whole stream
+     * @param length the full length of the response body, or -1 for the whole
+     *               stream
      * @param range  the sub-range within the response body that should be
      *               sent, or null if the entire body should be sent
      *
      * @throws IOException if an error occurs
      */
-    public void sendBody(InputStream body, long length, long[] range) throws IOException {
+    @SuppressWarnings("AssignmentToMethodParameter")
+    public void sendBody(InputStream body, long length, long[] range) throws IOException
+    {
         OutputStream outputStream = getBody();
 
         if (outputStream != null)
@@ -288,11 +318,12 @@ public class Response implements Closeable {
      *
      * @throws IOException if an error occurs
      */
-    public void sendError(int status, String text) throws IOException {
+    public void sendError(int status, String text) throws IOException
+    {
         send(status, String.format(
-             "<!DOCTYPE html>%n<html>%n<head><title>%d %s</title></head>%n"
-             + "<body><h1>%d %s</h1>%n<p>%s</p>%n</body></html>",
-             status, statuses[status], status, statuses[status], escapeHTML(text)));
+                "<!DOCTYPE html>%n<html>%n<head><title>%d %s</title></head>%n"
+                + "<body><h1>%d %s</h1>%n<p>%s</p>%n</body></html>",
+                status, statuses[status], status, statuses[status], escapeHTML(text)));
     }
 
     /**
@@ -302,7 +333,8 @@ public class Response implements Closeable {
      *
      * @throws IOException if an error occurs
      */
-    public void sendError(int status) throws IOException {
+    public void sendError(int status) throws IOException
+    {
         String text = status < 400 ? ":)" : "sorry it didn't work out :(";
         sendError(status, text);
     }
@@ -318,7 +350,8 @@ public class Response implements Closeable {
      * @throws IOException if an error occurs or headers were already sent
      * @see #sendHeaders(int, long, long, String, String, long[])
      */
-    public void sendHeaders(int status) throws IOException {
+    public void sendHeaders(int status) throws IOException
+    {
         if (headersSent())
         {
             throw new IOException("headers were already sent");
@@ -351,7 +384,8 @@ public class Response implements Closeable {
      * properly calculated as well, with a 200 status changed to a 206 status.
      *
      * @param status       the response status
-     * @param length       the response body length, or zero if there is no body,
+     * @param length       the response body length, or zero if there is no
+     *                     body,
      *                     or negative if there is a body but its length is not yet known
      * @param lastModified the last modified date of the response resource,
      *                     or non-positive if unknown. A time in the future will be
@@ -365,13 +399,16 @@ public class Response implements Closeable {
      *
      * @throws IOException if an error occurs
      */
+    @SuppressWarnings("AssignmentToMethodParameter")
     public void sendHeaders(int status, long length, long lastModified,
-                            String etag, String contentType, long[] range) throws IOException {
+            String etag, String contentType, long[] range) throws IOException
+    {
         if (range != null)
         {
             headers.add("Content-Range", "bytes " + range[0] + "-"
-                                         + range[1] + "/" + (length >= 0 ? length : "*"));
+                    + range[1] + "/" + (length >= 0 ? length : "*"));
             length = range[1] - range[0] + 1;
+
             if (status == 200)
             {
                 status = 206;
@@ -393,7 +430,7 @@ public class Response implements Closeable {
             String accepted = req == null ? null : req.getHeaders().get("Accept-Encoding");
             List<String> encodings = Arrays.asList(splitElements(accepted, true));
             String compression = encodings.contains("gzip") ? "gzip"
-                                 : encodings.contains("deflate") ? "deflate" : null;
+                    : encodings.contains("deflate") ? "deflate" : null;
             if (compression != null && (length < 0 || length > 300) && isCompressible(ct) && modern)
             {
                 headers.add("Transfer-Encoding", "chunked"); // compressed data is always unknown length
@@ -423,7 +460,7 @@ public class Response implements Closeable {
         }
 
         if (req != null && "close".equalsIgnoreCase(req.getHeaders().get("Connection"))
-            && !headers.contains("Connection"))
+                && !headers.contains("Connection"))
         {
             headers.add("Connection", "close"); // #RFC7230#6.6: should reply to close with close
         }
@@ -432,11 +469,13 @@ public class Response implements Closeable {
     }
 
     /**
-     * Adds a number of headers designed to prevent the browser from caching the files.
+     * Adds a number of headers designed to prevent the browser from caching the
+     * files.
      * <p>
      * Bradley Willcott (24/12/2020)
      */
-    private void addNoCachingHeaders() {
+    private void addNoCachingHeaders()
+    {
         headers.add("Cache-Control", "max-age=0,no-cache,no-store,must-revalidate");
         headers.add("Pragma", "no-cache");
         headers.add("Expires", "Tue, 01 Jan 1970 00:00:00 GMT");

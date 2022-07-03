@@ -37,9 +37,12 @@ import java.io.InputStream;
  * @since 1.0
  * @version 2.5.3
  */
-public class LimitedInputStream extends FilterInputStream {
+    @SuppressWarnings("ProtectedField")
+public class LimitedInputStream extends FilterInputStream
+{
 
-    protected long limit; // decremented when read, until it reaches zero
+        protected long limit; // decremented when read, until it reaches zero
+
     protected boolean prematureEndException;
 
     /**
@@ -47,7 +50,8 @@ public class LimitedInputStream extends FilterInputStream {
      * input stream and limit.
      *
      * @param in                    the underlying input stream
-     * @param limit                 the maximum number of bytes that may be consumed from
+     * @param limit                 the maximum number of bytes that may be
+     *                              consumed from
      *                              the underlying stream before this stream ends. If zero or
      *                              negative, this stream will be at its end from initialization.
      * @param prematureEndException specifies the stream's behavior when
@@ -57,7 +61,8 @@ public class LimitedInputStream extends FilterInputStream {
      *
      * @throws NullPointerException if the given stream is null
      */
-    public LimitedInputStream(InputStream in, long limit, boolean prematureEndException) {
+    public LimitedInputStream(InputStream in, long limit, boolean prematureEndException)
+    {
         super(in);
 
         if (in == null)
@@ -70,23 +75,27 @@ public class LimitedInputStream extends FilterInputStream {
     }
 
     @Override
-    public int available() throws IOException {
+    public int available() throws IOException
+    {
         int res = in.available();
         return res > limit ? (int) limit : res;
     }
 
     @Override
-    public void close() {
+    public void close()
+    {
         limit = 0; // end this stream, but don't close the underlying stream
     }
 
     @Override
-    public boolean markSupported() {
+    public boolean markSupported()
+    {
         return false;
     }
 
     @Override
-    public int read() throws IOException {
+    public int read() throws IOException
+    {
         int res = limit == 0 ? -1 : in.read();
 
         if (res < 0 && limit > 0 && prematureEndException)
@@ -95,11 +104,13 @@ public class LimitedInputStream extends FilterInputStream {
         }
 
         limit = res < 0 ? 0 : limit - 1;
+
         return res;
     }
 
     @Override
-    public int read(byte[] b, int off, int len) throws IOException {
+    public int read(byte[] b, int off, int len) throws IOException
+    {
         int res = limit == 0 ? -1 : in.read(b, off, len > limit ? (int) limit : len);
 
         if (res < 0 && limit > 0 && prematureEndException)
@@ -108,14 +119,15 @@ public class LimitedInputStream extends FilterInputStream {
         }
 
         limit = res < 0 ? 0 : limit - res;
+
         return res;
     }
 
     @Override
-    public long skip(long len) throws IOException {
+    public long skip(long len) throws IOException
+    {
         long res = in.skip(len > limit ? limit : len);
         limit -= res;
         return res;
     }
-
 }

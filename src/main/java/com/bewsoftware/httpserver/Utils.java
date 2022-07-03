@@ -340,6 +340,7 @@ public class Utils
             {
             } // never thrown
         }
+
         return params;
     }
 
@@ -357,6 +358,7 @@ public class Utils
     {
         long min = Long.MAX_VALUE;
         long max = Long.MIN_VALUE;
+
         try
         {
             for (String token : splitElements(range, false))
@@ -436,6 +438,7 @@ public class Utils
         {
             throw new NumberFormatException("invalid digit: " + s.charAt(0));
         }
+
         return val;
     }
 
@@ -462,10 +465,12 @@ public class Utils
         {
             return new String[0];
         }
+
         Collection<String> elements = new ArrayList<>();
         int len = str.length();
         int start = 0;
         int end;
+
         while (start < len)
         {
             for (end = --limit == 0 ? len : start;
@@ -479,6 +484,7 @@ public class Utils
             }
             start = end + 1;
         }
+
         return elements.toArray(String[]::new);
     }
 
@@ -529,6 +535,7 @@ public class Utils
                 map.put((K) pair[0], (V) pair[1]);
             }
         }
+
         return map;
     }
 
@@ -585,6 +592,7 @@ public class Utils
                 s = s.substring(0, start) + s.substring(end);
             }
         }
+
         return s;
     }
 
@@ -627,5 +635,4 @@ public class Utils
 
         return end == len ? s : s.substring(0, end + 1);
     }
-
 }

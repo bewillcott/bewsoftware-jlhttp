@@ -1,8 +1,8 @@
 /*
- *  File Name:    Constants.java
- *  Project Name: bewsoftware-mdj-cli
+ *  File Name:    NewClass.java
+ *  Project Name: bewsoftware-jlhttp
  *
- *  Copyright (c) 2021 Bradley Willcott
+ *  Copyright (c) 2022 Bradley Willcott
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,8 +30,8 @@ import static com.bewsoftware.httpserver.util.MCPOMProperties.INSTANCE;
  *
  * @author <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
  *
- * @since 1.1.7
- * @version 1.1.7
+ * @since 2.6.3
+ * @version 2.6.3
  */
 public class Constants
 {

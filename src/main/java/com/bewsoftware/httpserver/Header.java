@@ -29,9 +29,11 @@ package com.bewsoftware.httpserver;
  * @since 1.0
  * @version 2.5.3
  */
-public class Header {
+public class Header
+{
 
     protected final String name;
+
     protected final String value;
 
     /**
@@ -44,7 +46,8 @@ public class Header {
      * @throws NullPointerException     if name or value is null
      * @throws IllegalArgumentException if name is empty
      */
-    public Header(String name, String value) {
+    public Header(String name, String value)
+    {
         this.name = name.trim();
         this.value = value.trim();
 
@@ -60,7 +63,8 @@ public class Header {
      *
      * @return this header's name
      */
-    public String getName() {
+    public String getName()
+    {
         return name;
     }
 
@@ -69,7 +73,8 @@ public class Header {
      *
      * @return this header's value
      */
-    public String getValue() {
+    public String getValue()
+    {
         return value;
     }
 }

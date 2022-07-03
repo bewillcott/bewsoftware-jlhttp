@@ -43,7 +43,9 @@ import static com.bewsoftware.httpserver.Utils.getBytes;
  * @since 1.0
  * @version 2.5.3
  */
-public class ChunkedOutputStream extends FilterOutputStream {
+@SuppressWarnings("ProtectedField")
+public class ChunkedOutputStream extends FilterOutputStream
+{
 
     protected int state; // the current stream state
 
@@ -55,7 +57,8 @@ public class ChunkedOutputStream extends FilterOutputStream {
      *
      * @throws NullPointerException if the given stream is null
      */
-    public ChunkedOutputStream(OutputStream out) {
+    public ChunkedOutputStream(OutputStream out)
+    {
         super(out);
 
         if (out == null)
@@ -65,54 +68,20 @@ public class ChunkedOutputStream extends FilterOutputStream {
     }
 
     /**
-     * Initializes a new chunk with the given size.
-     *
-     * @param size the chunk size (must be positive)
-     *
-     * @throws IllegalArgumentException if size is negative
-     * @throws IOException              if an IO error occurs, or the stream has
-     *                                  already been ended
-     */
-    protected void initChunk(long size) throws IOException {
-        if (size < 0)
-        {
-            throw new IllegalArgumentException("invalid size: " + size);
-        }
-
-        if (state > 0)
-        {
-            out.write(CRLF); // end previous chunk
-        } else if (state == 0)
-        {
-            state = 1; // start first chunk
-        } else
-        {
-            throw new IOException("chunked stream has already ended");
-        }
-
-        out.write(getBytes(Long.toHexString(size)));
-        out.write(CRLF);
-    }
-
-    /**
-     * Writes the trailing chunk which marks the end of the stream.
-     *
-     * @param headers the (optional) trailing arrHeader to write, or null
+     * Writes the trailing chunk if necessary, and closes the underlying stream.
      *
      * @throws IOException if an error occurs
      */
-    public void writeTrailingChunk(Headers headers) throws IOException {
-        initChunk(0); // zero-sized chunk marks the end of the stream
-
-        if (headers == null)
+    @Override
+    @SuppressWarnings("ConvertToTryWithResources")
+    public void close() throws IOException
+    {
+        if (state > -1)
         {
-            out.write(CRLF); // empty header block
-        } else
-        {
-            headers.writeTo(out);
+            writeTrailingChunk(null);
         }
 
-        state = -1;
+        super.close();
     }
 
     /**
@@ -124,7 +93,8 @@ public class ChunkedOutputStream extends FilterOutputStream {
      * @throws IOException if an error occurs
      */
     @Override
-    public void write(int b) throws IOException {
+    public void write(int b) throws IOException
+    {
         write(new byte[]
         {
             (byte) b
@@ -144,7 +114,8 @@ public class ChunkedOutputStream extends FilterOutputStream {
      *                                   are outside the bounds of the given array
      */
     @Override
-    public void write(byte[] b, int off, int len) throws IOException {
+    public void write(byte[] b, int off, int len) throws IOException
+    {
         if (len > 0) // zero-sized chunk is the trailing chunk
         {
             initChunk(len);
@@ -153,17 +124,55 @@ public class ChunkedOutputStream extends FilterOutputStream {
     }
 
     /**
-     * Writes the trailing chunk if necessary, and closes the underlying stream.
+     * Writes the trailing chunk which marks the end of the stream.
+     *
+     * @param headers the (optional) trailing arrHeader to write, or null
      *
      * @throws IOException if an error occurs
      */
-    @Override
-    public void close() throws IOException {
-        if (state > -1)
+    public void writeTrailingChunk(Headers headers) throws IOException
+    {
+        initChunk(0); // zero-sized chunk marks the end of the stream
+
+        if (headers == null)
         {
-            writeTrailingChunk(null);
+            out.write(CRLF); // empty header block
+        } else
+        {
+            headers.writeTo(out);
         }
 
-        super.close();
+        state = -1;
+    }
+
+    /**
+     * Initializes a new chunk with the given size.
+     *
+     * @param size the chunk size (must be positive)
+     *
+     * @throws IllegalArgumentException if size is negative
+     * @throws IOException              if an IO error occurs, or the stream has
+     *                                  already been ended
+     */
+    protected void initChunk(long size) throws IOException
+    {
+        if (size < 0)
+        {
+            throw new IllegalArgumentException("invalid size: " + size);
+        }
+
+        if (state > 0)
+        {
+            out.write(CRLF); // end previous chunk
+        } else if (state == 0)
+        {
+            state = 1; // start first chunk
+        } else
+        {
+            throw new IOException("chunked stream has already ended");
+        }
+
+        out.write(getBytes(Long.toHexString(size)));
+        out.write(CRLF);
     }
 }

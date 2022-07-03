@@ -22,7 +22,6 @@
 package com.bewsoftware.httpserver;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -57,9 +56,10 @@ import static com.bewsoftware.httpserver.Utils.getBytes;
  * @author <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
  *
  * @since 1.0
- * @version 2.5.3
+ * @version 2.6.3
  */
-public class MultipartIterator implements Iterator<MultipartIterator.Part>
+@SuppressWarnings("ProtectedField")
+public class MultipartIterator implements Iterator<Part>
 {
 
     protected final MultipartInputStream in;
@@ -129,6 +129,7 @@ public class MultipartIterator implements Iterator<MultipartIterator.Part>
         p.name = cd.get("name");
         p.filename = cd.get("filename");
         p.body = in;
+
         return p;
     }
 
@@ -136,53 +137,5 @@ public class MultipartIterator implements Iterator<MultipartIterator.Part>
     public void remove()
     {
         throw new UnsupportedOperationException();
-    }
-
-    /**
-     * The {@code Part} class encapsulates a single part of the multipart.
-     */
-    @SuppressWarnings("PublicField")
-    public static class Part
-    {
-
-        /**
-         * The part's body (form field value).
-         */
-        public InputStream body;
-
-        /**
-         * The part's filename (original filename entered in file form field).
-         */
-        public String filename;
-
-        /**
-         * The part's Headers.
-         */
-        public Headers headers;
-
-        /**
-         * The part's name (form field name).
-         */
-        public String name;
-
-        public Part()
-        {
-        }
-
-        /**
-         * *
-         * Returns the part's body as a string. If the part
-         * headers do not specify a charset, UTF-8 is used.
-         *
-         * @return the part's body as a string
-         *
-         * @throws IOException if an IO error occurs
-         */
-        public String getString() throws IOException
-        {
-            String charset = headers.getParams("Content-Type").get("charset");
-            charset = charset == null ? "UTF-8" : charset;
-            return FileUtils.readToken(body, -1, charset, 8192);
-        }
     }
 }
