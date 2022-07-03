@@ -26,7 +26,9 @@ import java.net.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import javax.net.ServerSocketFactory;
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.swing.JOptionPane;
@@ -50,12 +52,15 @@ import static java.lang.System.exit;
  * <li>RFC compliant - correctness is not sacrificed for the sake of size</li>
  * <li>Virtual hosts - multiple domains and subdomains per server</li>
  * <li>File serving - built-in handler to serve files and folders from disk</li>
- * <li>Mime type mappings - configurable via API or a standard mime.types file</li>
+ * <li>Mime type mappings - configurable via API or a standard mime.types
+ * file</li>
  * <li>Directory index generation - enables browsing folder contents</li>
  * <li>Welcome files - configurable default filename (e.g. index.html)</li>
- * <li>All HTTP methods supported - GET/HEAD/OPTIONS/TRACE/POST/PUT/DELETE/custom</li>
+ * <li>All HTTP methods supported -
+ * GET/HEAD/OPTIONS/TRACE/POST/PUT/DELETE/custom</li>
  * <li>Conditional statuses - ETags and If-* header support</li>
- * <li>Chunked transfer encoding - for serving dynamically-generated data streams</li>
+ * <li>Chunked transfer encoding - for serving dynamically-generated data
+ * streams</li>
  * <li>Gzip/deflate compression - reduces bandwidth and download time</li>
  * <li>HTTPS - secures all server communications</li>
  * <li>Partial content - download continuation (a.k.a. byte range serving)</li>
@@ -68,7 +73,8 @@ import static java.lang.System.exit;
  * <li>Small footprint - standard jar is ~50K, stripped jar is ~35K</li>
  * <li>Extensible design - easy to override, add or remove functionality</li>
  * <li>Reusable utility methods to simplify your custom code</li>
- * <li>Extensive documentation of API and implementation (&gt;40% of source lines)</li>
+ * <li>Extensive documentation of API and implementation (&gt;40% of source
+ * lines)</li>
  * </ul>
  * <p>
  * <b>Use Cases</b>
@@ -98,12 +104,15 @@ import static java.lang.System.exit;
  * <p>
  * This server is multi-threaded in its support for multiple concurrent HTTP
  * connections, however most of its constituent classes are not thread-safe and
- * require external synchronization if accessed by multiple threads concurrently.
+ * require external synchronization if accessed by multiple threads
+ * concurrently.
  * <p>
  * <b>Source Structure and Documentation</b>
  * <p>
- * This server is intentionally written as a single source file, in order to make
- * it as easy as possible to integrate into any existing project - by simply adding
+ * This server is intentionally written as a single source file, in order to
+ * make
+ * it as easy as possible to integrate into any existing project - by simply
+ * adding
  * this single file to the project sources. It does, however, aim to maintain a
  * structured and flexible design. There are no external package dependencies.
  * <p>
@@ -128,16 +137,21 @@ import static java.lang.System.exit;
  * <ul>
  * <li>Made changes recommended by Netbeans 12.1.</li>
  * <li>Updated code to JDK 12.</li>
- * <li>Made specific to requirement of publishing static web pages from 'jar' file.</li>
- * <li>Added ability to auto open the system default browser to hosted location.</li>
- * <li>Changed package from: {@code net.freeutils.httpserver} to {@code com.bewsoftware.httpserver}.</li>
+ * <li>Made specific to requirement of publishing static web pages from 'jar'
+ * file.</li>
+ * <li>Added ability to auto open the system default browser to hosted
+ * location.</li>
+ * <li>Changed package from: {@code net.freeutils.httpserver} to
+ * {@code com.bewsoftware.httpserver}.</li>
  * <li>Updated licence from GPLv2 to GPLv3.</li>
- * <li>To be embed inside 'jar' files containing the results of my MDj CLI program (.md -&lt; .html).</li>
+ * <li>To be embed inside 'jar' files containing the results of my MDj CLI
+ * program (.md -&lt; .html).</li>
  * </ul></li>
  * <li>(2020/12/18 - v2.5.3)
  * <ul>
  * <li>Made minor changes to improve embedding.</li>
- * <li>Due to the difficulty of working with such a large single file, I have split it up
+ * <li>Due to the difficulty of working with such a large single file, I have
+ * split it up
  * into many smaller more manageable files.</li>
  * </ul></li>
  * <li>(2020/12/18 - v2.5.4)
@@ -152,7 +166,8 @@ import static java.lang.System.exit;
  * @since 2008-07-24
  * @version 2.5.8
  */
-public class HTTPServer {
+public class HTTPServer
+{
 
     /**
      * A convenience array containing the carriage-return and line feed chars.
@@ -173,6 +188,7 @@ public class HTTPServer {
         "EEEE, dd-MMM-yy HH:mm:ss z", // RFC 850, obsoleted by RFC 1036
         "EEE MMM d HH:mm:ss yyyy"      // ANSI C's asctime() format
     };
+
     /**
      * Response HTTP Header: "Server" setting.
      */
@@ -216,8 +232,9 @@ public class HTTPServer {
      * Date format string.
      */
     protected static final char[] MONTHS
-                                  = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec"
+            = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec"
                     .toCharArray();
+
     /**
      * The operating system we are running on.
      * <p>
@@ -243,6 +260,31 @@ public class HTTPServer {
      * The HTTP status description strings.
      */
     protected static final String[] statuses = new String[600];
+
+    /**
+     * Setting to disallow web browsers caching the files sent by an instance of
+     * HTTPServer.
+     * (default: false)
+     * <p>
+     * Bradley Willcott (24/12/2020)
+     */
+    protected boolean disallowBrowserFileCaching;
+
+    protected volatile Executor executor;
+
+    protected final Map<String, VirtualHost> hosts = new ConcurrentHashMap<>();
+
+    protected volatile int port;
+
+    protected volatile boolean secure;
+
+    protected volatile ServerSocket serv;
+
+    protected volatile HTTPServer server;
+
+    protected volatile ServerSocketFactory serverSocketFactory;
+
+    protected volatile int socketTimeout = 1000;
 
     static
     {
@@ -305,6 +347,30 @@ public class HTTPServer {
     }
 
     /**
+     * Constructs an HTTPServer which can accept connections on the given port.
+     * Note: the {@link #start()} method must be called to start accepting
+     * connections.
+     *
+     * @param port the port on which this server will accept connections
+     */
+    public HTTPServer(int port)
+    {
+        setPort(port);
+        addVirtualHost(new VirtualHost(null)); // add default virtual host
+    }
+
+    /**
+     * Constructs an HTTPServer which can accept connections on the default HTTP
+     * port 80.
+     * Note: the {@link #start()} method must be called to start accepting
+     * connections.
+     */
+    public HTTPServer()
+    {
+        this(80);
+    }
+
+    /**
      * Adds a Content-Type mapping for the given path suffixes.
      * If any of the path suffixes had a previous Content-Type associated
      * with it, it is replaced with the given one. Path suffixes are
@@ -316,7 +382,8 @@ public class HTTPServer {
      *                    the contentType, e.g. the file extensions of served files
      *                    (excluding the '.' character)
      */
-    public static void addContentType(String contentType, String... suffixes) {
+    public static void addContentType(String contentType, String... suffixes)
+    {
         for (String suffix : suffixes)
         {
             contentTypes.put(suffix.toLowerCase(Locale.US), contentType.toLowerCase(Locale.US));
@@ -331,7 +398,8 @@ public class HTTPServer {
      * @throws IOException           if an error occurs
      * @throws FileNotFoundException if the file is not found or cannot be read
      */
-    public static void addContentTypes(InputStream in) throws IOException {
+    public static void addContentTypes(InputStream in) throws IOException
+    {
         try (in)
         {
             String line;
@@ -364,27 +432,30 @@ public class HTTPServer {
      *
      * @return the content type for the given path, or the given default
      */
-    public static String getContentType(String path, String def) {
+    public static String getContentType(String path, String def)
+    {
         int dot = path.lastIndexOf('.');
         String type = dot < 0 ? def : contentTypes.get(path.substring(dot + 1).toLowerCase(Locale.US));
         return type != null ? type : def;
     }
 
     /**
-     * Checks whether data of the given content type (MIME type) is compressible.
+     * Checks whether data of the given content type (MIME type) is
+     * compressible.
      *
      * @param contentType the content type
      *
      * @return true if the data is compressible, false if not
      */
-    public static boolean isCompressible(String contentType) {
+    public static boolean isCompressible(String contentType)
+    {
         int pos = contentType.indexOf(';'); // exclude params
         String ct = pos < 0 ? contentType : contentType.substring(0, pos);
 
         for (String s : compressibleContentTypes)
         {
             if (s.equals(ct) || s.charAt(0) == '*' && ct.endsWith(s.substring(1))
-                || s.charAt(s.length() - 1) == '*' && ct.startsWith(s.substring(0, s.length() - 1)))
+                    || s.charAt(s.length() - 1) == '*' && ct.startsWith(s.substring(0, s.length() - 1)))
             {
                 return true;
             }
@@ -400,7 +471,8 @@ public class HTTPServer {
      *
      * @return result.
      */
-    public static boolean isMac() {
+    public static boolean isMac()
+    {
         return OS.contains("mac");
     }
 
@@ -411,7 +483,8 @@ public class HTTPServer {
      *
      * @return result.
      */
-    public static boolean isUnix() {
+    public static boolean isUnix()
+    {
         return OS.contains("nix") || OS.contains("nux") || OS.indexOf("aix") > 0;
     }
 
@@ -422,7 +495,8 @@ public class HTTPServer {
      *
      * @return result.
      */
-    public static boolean isWindows() {
+    public static boolean isWindows()
+    {
         return OS.contains("win");
     }
 
@@ -435,7 +509,8 @@ public class HTTPServer {
      * @throws URISyntaxException   if any.
      * @throws InterruptedException if any.
      */
-    public static void main(String[] args) throws URISyntaxException, InterruptedException {
+    public static void main(String[] args) throws URISyntaxException, InterruptedException
+    {
         HTTPServer server = null;
 
         try
@@ -460,14 +535,14 @@ public class HTTPServer {
                     .toURI().toString());
             VirtualHost host = server.getVirtualHost(null); // default host
             host.setAllowGeneratedIndex(true); // with directory index pages
-            host.addContext("/", new JarContextHandler(jarURI, "/"));
+            host.addContext("/", new FileContextHandler("/"));
             host.addContext("/time", (Request req, Response resp) ->
-                    {
-                        long now = System.currentTimeMillis();
-                        resp.getHeaders().add("Content-Type", "text/plain");
-                        resp.send(200, String.format("Server time: %tF %<tT", now));
-                        return 0;
-                    });
+            {
+                long now = System.currentTimeMillis();
+                resp.getHeaders().add("Content-Type", "text/plain");
+                resp.send(200, String.format("Server time: %tF %<tT", now));
+                return 0;
+            });
 
             server.start();
             String msg = TITLE + " (" + VERSION + ") is listening on port " + server.port;
@@ -484,8 +559,8 @@ public class HTTPServer {
             };
 
             JOptionPane.showOptionDialog(null, msg, TITLE + " (" + VERSION + ")",
-                                         JOptionPane.OK_OPTION, JOptionPane.WARNING_MESSAGE,
-                                         null, options, null);
+                    JOptionPane.OK_OPTION, JOptionPane.WARNING_MESSAGE,
+                    null, options, null);
 
             server.stop();
             exit(0);
@@ -510,7 +585,8 @@ public class HTTPServer {
      * @throws IllegalArgumentException if the given string does not contain
      *                                  a valid date format in any of the supported formats
      */
-    public static Date parseDate(String time) {
+    public static Date parseDate(String time)
+    {
         for (String pattern : DATE_PATTERNS)
         {
             try
@@ -526,42 +602,6 @@ public class HTTPServer {
 
         throw new IllegalArgumentException("invalid date format: " + time);
     }
-    /**
-     * Setting to disallow web browsers caching the files sent by an instance of HTTPServer.
-     * (default: false)
-     * <p>
-     * Bradley Willcott (24/12/2020)
-     */
-    protected boolean disallowBrowserFileCaching;
-
-    protected volatile Executor executor;
-    protected final Map<String, VirtualHost> hosts = new ConcurrentHashMap<>();
-    protected volatile int port;
-    protected volatile boolean secure;
-    protected volatile ServerSocket serv;
-    protected volatile HTTPServer server;
-    protected volatile ServerSocketFactory serverSocketFactory;
-    protected volatile int socketTimeout = 1000;
-
-    /**
-     * Constructs an HTTPServer which can accept connections on the given port.
-     * Note: the {@link #start()} method must be called to start accepting
-     * connections.
-     *
-     * @param port the port on which this server will accept connections
-     */
-    public HTTPServer(int port) {
-        setPort(port);
-        addVirtualHost(new VirtualHost(null)); // add default virtual host
-    }
-
-    /**
-     * Constructs an HTTPServer which can accept connections on the default HTTP port 80.
-     * Note: the {@link #start()} method must be called to start accepting connections.
-     */
-    public HTTPServer() {
-        this(80);
-    }
 
     /**
      * Adds the given virtual host to the server.
@@ -569,7 +609,8 @@ public class HTTPServer {
      *
      * @param host the virtual host to add
      */
-    public final void addVirtualHost(VirtualHost host) {
+    public final void addVirtualHost(VirtualHost host)
+    {
         String name = host.getName();
         hosts.put(name == null ? "" : name, host);
     }
@@ -581,7 +622,8 @@ public class HTTPServer {
      *
      * @param executor the executor to use
      */
-    public void setExecutor(Executor executor) {
+    public void setExecutor(Executor executor)
+    {
         this.executor = executor;
     }
 
@@ -590,24 +632,30 @@ public class HTTPServer {
      *
      * @param port the port on which this server will accept connections
      */
-    public final void setPort(int port) {
+    public final void setPort(int port)
+    {
         this.port = port;
     }
 
     /**
      * Sets the factory used to create the server socket.
-     * If null or not set, the default {@link ServerSocketFactory#getDefault()} is used.
+     * If null or not set, the default {@link ServerSocketFactory#getDefault()}
+     * is used.
      * For secure sockets (HTTPS), use an SSLServerSocketFactory instance.
-     * The port should usually also be changed for HTTPS, e.g. port 443 instead of 80.
+     * The port should usually also be changed for HTTPS, e.g. port 443 instead
+     * of 80.
      * <p>
      * If using the default SSLServerSocketFactory returned by
-     * {@link SSLServerSocketFactory#getDefault()}, the appropriate system properties
+     * {@link SSLServerSocketFactory#getDefault()}, the appropriate system
+     * properties
      * must be set to configure the default JSSE provider, such as
-     * {@code javax.net.ssl.keyStore} and {@code javax.net.ssl.keyStorePassword}.
+     * {@code javax.net.ssl.keyStore} and
+     * {@code javax.net.ssl.keyStorePassword}.
      *
      * @param factory the server socket factory to use
      */
-    public void setServerSocketFactory(ServerSocketFactory factory) {
+    public void setServerSocketFactory(ServerSocketFactory factory)
+    {
         this.serverSocketFactory = factory;
         this.secure = factory instanceof SSLServerSocketFactory;
     }
@@ -617,7 +665,8 @@ public class HTTPServer {
      *
      * @param timeout the socket timeout in milliseconds
      */
-    public void setSocketTimeout(int timeout) {
+    public void setSocketTimeout(int timeout)
+    {
         this.socketTimeout = timeout;
     }
 
@@ -629,7 +678,8 @@ public class HTTPServer {
      *
      * @return the virtual host with the given name, or null if it doesn't exist
      */
-    public VirtualHost getVirtualHost(String name) {
+    public VirtualHost getVirtualHost(String name)
+    {
         return hosts.get(name == null ? "" : name);
     }
 
@@ -638,7 +688,8 @@ public class HTTPServer {
      *
      * @return all virtual hosts (as an unmodifiable set)
      */
-    public Set<VirtualHost> getVirtualHosts() {
+    public Set<VirtualHost> getVirtualHosts()
+    {
         return Collections.unmodifiableSet(new HashSet<>(hosts.values()));
     }
 
@@ -650,7 +701,8 @@ public class HTTPServer {
      *
      * @throws IOException if the server cannot begin accepting connections
      */
-    public synchronized void start() throws IOException {
+    public synchronized void start() throws IOException
+    {
         if (serv != null)
         {
             return;
@@ -678,9 +730,11 @@ public class HTTPServer {
 
     /**
      * Stops this server. If it is already stopped, does nothing.
-     * Note that if an {@link #setExecutor Executor} was set, it must be closed separately.
+     * Note that if an {@link #setExecutor Executor} was set, it must be closed
+     * separately.
      */
-    public synchronized void stop() {
+    public synchronized void stop()
+    {
         try
         {
             if (serv != null)
@@ -712,25 +766,30 @@ public class HTTPServer {
     }
 
     @Override
-    public String toString() {
+    public String toString()
+    {
         return "HTTPServer{"
-               + "\nexecutor=" + executor + ", "
-               + "\nhosts=" + hosts + ", "
-               + "\nport=" + port + ", "
-               + "\nsecure=" + secure + ", "
-               + "\nserv=" + serv + ", "
-               + "\nserverSocketFactory=" + serverSocketFactory + ", "
-               + "\nsocketTimeout=" + socketTimeout + '}';
+                + "\nexecutor=" + executor + ", "
+                + "\nhosts=" + hosts + ", "
+                + "\nport=" + port + ", "
+                + "\nsecure=" + secure + ", "
+                + "\nserv=" + serv + ", "
+                + "\nserverSocketFactory=" + serverSocketFactory + ", "
+                + "\nsocketTimeout=" + socketTimeout + '}';
     }
 
     /**
-     * Creates the server socket used to accept connections, using the configured
-     * {@link #setServerSocketFactory ServerSocketFactory} and {@link #setPort port}.
+     * Creates the server socket used to accept connections, using the
+     * configured
+     * {@link #setServerSocketFactory ServerSocketFactory} and
+     * {@link #setPort port}.
      * <p>
-     * Cryptic errors seen here often mean the factory configuration details are wrong.
+     * Cryptic errors seen here often mean the factory configuration details are
+     * wrong.
      * <dl>
      * <dt><b>Changes:</b></dt>
-     * <dd>Added code to try a range of default ports, if the initial port is not
+     * <dd>Added code to try a range of default ports, if the initial port is
+     * not
      * available.</dd>
      * <dd>Bradley Willcott (2020/12/08)</dd>
      * </dl>
@@ -739,7 +798,8 @@ public class HTTPServer {
      *
      * @throws IOException if the socket cannot be created
      */
-    protected ServerSocket createServerSocket() throws IOException {
+    protected ServerSocket createServerSocket() throws IOException
+    {
         ServerSocket serverSocket = serverSocketFactory.createServerSocket();
         serverSocket.setReuseAddress(true);
 
@@ -788,7 +848,8 @@ public class HTTPServer {
      *
      * @throws IOException if an error occurs
      */
-    protected void handleConnection(InputStream in, OutputStream out) throws IOException {
+    protected void handleConnection(InputStream in, OutputStream out) throws IOException
+    {
         in = new BufferedInputStream(in, 4096);
         out = new BufferedOutputStream(out, 4096);
         Request req;
@@ -839,7 +900,7 @@ public class HTTPServer {
             FileUtils.transfer(req.getBody(), null, -1);
             // RFC7230#6.6: persist connection unless client or server close explicitly (or legacy client)
         } while (!"close".equalsIgnoreCase(req.getHeaders().get("Connection"))
-                 && !"close".equalsIgnoreCase(resp.getHeaders().get("Connection")) && req.getVersion().endsWith("1.1"));
+                && !"close".equalsIgnoreCase(resp.getHeaders().get("Connection")) && req.getVersion().endsWith("1.1"));
     }
 
 }

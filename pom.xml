@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.bewsoftware</groupId>
     <artifactId>bewsoftware-jlhttp</artifactId>
-    <version>2.5.8</version>
+    <version>2.5.9-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>BEWSoftware JLHTTP Server</name>
@@ -23,18 +21,27 @@
         </license>
     </licenses>
 
-    <properties> 
-        <major.minor.version>2.5</major.minor.version>
-        <jdk.version>12</jdk.version>
-        <!--<animal.sniffer.jdk.version>java15</animal.sniffer.jdk.version>-->
-        <skip.assembly>false</skip.assembly>
-        <maven.compiler.source>12</maven.compiler.source>
-        <maven.compiler.target>12</maven.compiler.target>
+    <properties>
+        <jar.manifest.mainClass>com.bewsoftware.httpserver.Main</jar.manifest.mainClass>
+        <docs.source>src/docs/manual</docs.source>
+        <docs.target>target/docs/manual</docs.target>
+        <java.version>18</java.version>
+        <source.encoding>UTF-8</source.encoding>
+        <javadoc.source.version>${java.version}</javadoc.source.version>
+        <jdk.version>${java.version}</jdk.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <project.build.sourceEncoding>${source.encoding}</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>${source.encoding}</project.reporting.outputEncoding>
+        <javadoc.reporting.outputDirectory>${project.reporting.outputDirectory}/apidocs</javadoc.reporting.outputDirectory>
+        <javadoc.link.url.jdk>https://docs.oracle.com/en/java/javase/${java.version}/docs/api/</javadoc.link.url.jdk>
+        <skip.unit.tests>true</skip.unit.tests>
+        <skip.version.build>false</skip.version.build>
     </properties>
 
     <profiles>
         <profile>
-            <id>clean-manual</id>
+            <id>manual-clean</id>
             <build>
                 <plugins>
                     <plugin>
@@ -47,17 +54,17 @@
                                     <goal>clean</goal>
                                 </goals>
                                 <configuration>
-                                    <destination>target/docs/manual</destination>
+                                    <destination>${docs.target}</destination>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
                 </plugins>
             </build>
-        </profile>    
+        </profile>
 
         <profile>
-            <id>compile-manual</id>
+            <id>manual-compile</id>
             <build>
                 <plugins>
                     <plugin>
@@ -70,19 +77,19 @@
                                     <goal>mdj</goal>
                                 </goals>
                                 <configuration>
-                                    <source>src/docs/manual</source>
-                                    <destination>target/docs/manual</destination>
-                                    <verbosity>1</verbosity>
+                                    <source>${docs.source}</source>
+                                    <destination>${docs.target}</destination>
+                                    <verbosity/>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
                 </plugins>
             </build>
-        </profile>    
+        </profile>
 
         <profile>
-            <id>clean-compile-manual</id>
+            <id>manual-clean-compile</id>
             <build>
                 <plugins>
                     <plugin>
@@ -96,9 +103,9 @@
                                     <goal>mdj</goal>
                                 </goals>
                                 <configuration>
-                                    <source>src/docs/manual</source>
-                                    <destination>target/docs/manual</destination>
-                                    <verbosity>1</verbosity>
+                                    <source>${docs.source}</source>
+                                    <destination>${docs.target}</destination>
+                                    <verbosity/>
                                 </configuration>
                             </execution>
                         </executions>
@@ -106,9 +113,9 @@
                 </plugins>
             </build>
         </profile>
-        
+
         <profile>
-            <id>display-mdj-manual</id>
+            <id>manual-display-mdj</id>
             <build>
                 <plugins>
                     <plugin>
@@ -129,21 +136,37 @@
         </profile>
 
         <profile>
-            <id>increment-build</id>
+            <id>publish-all</id>
             <build>
                 <plugins>
-                    <!-- Increment {buildNumber} and update the 'pom.xml' file -->
                     <plugin>
-                        <groupId>com.bew.mojo</groupId>
-                        <artifactId>simple-buildnumber-maven-plugin</artifactId>
+                        <groupId>com.bewsoftware.mojo</groupId>
+                        <artifactId>bewsoftware-mdj-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>Update</id>
+                                <id>MDj-Publish-Manual</id>
                                 <goals>
-                                    <goal>create-xml</goal>
+                                    <goal>mdj</goal>
+                                    <goal>publish</goal>
                                 </goals>
                                 <configuration>
-                                    <runOnce>false</runOnce>
+                                    <disallowBrowserFileCaching>true</disallowBrowserFileCaching>
+                                    <source>${docs.source}</source>
+                                    <destination>${docs.target}</destination>
+                                    <serverContexts>
+                                        <serverContext>
+                                            <context>/</context>
+                                            <htmlSource>${docs.target}</htmlSource>
+                                        </serverContext>
+                                        <serverContext>
+                                            <context>/site</context>
+                                            <htmlSource>target/site</htmlSource>
+                                        </serverContext>
+                                        <serverContext>
+                                            <context>/api</context>
+                                            <htmlSource>target/${project.build.finalName}-javadoc.jar</htmlSource>
+                                        </serverContext>
+                                    </serverContexts>
                                 </configuration>
                             </execution>
                         </executions>
@@ -151,22 +174,31 @@
                 </plugins>
             </build>
         </profile>
+
         <profile>
-            <id>increment-release</id>
+            <id>manual-publish</id>
             <build>
                 <plugins>
-                    <!-- Increment {buildNumber}, remove '-SNAPSHOT' and update the 'pom.xml' file -->
                     <plugin>
-                        <groupId>com.bew.mojo</groupId>
-                        <artifactId>simple-buildnumber-maven-plugin</artifactId>
+                        <groupId>com.bewsoftware.mojo</groupId>
+                        <artifactId>bewsoftware-mdj-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>Release</id>
+                                <id>MDj-Publish-Manual</id>
                                 <goals>
-                                    <goal>create-xml</goal>
+                                    <goal>mdj</goal>
+                                    <goal>publish</goal>
                                 </goals>
                                 <configuration>
-                                    <release>true</release>
+                                    <disallowBrowserFileCaching>true</disallowBrowserFileCaching>
+                                    <source>${docs.source}</source>
+                                    <destination>${docs.target}</destination>
+                                    <serverContexts>
+                                        <serverContext>
+                                            <context>/</context>
+                                            <htmlSource>${docs.target}</htmlSource>
+                                        </serverContext>
+                                    </serverContexts>
                                 </configuration>
                             </execution>
                         </executions>
@@ -174,23 +206,32 @@
                 </plugins>
             </build>
         </profile>
+
         <profile>
-            <id>release-build</id>
+            <id>manual-clean-publish</id>
             <build>
                 <plugins>
-                    <!-- Keep current {buildNumber}, remove '-SNAPSHOT' and update the 'pom.xml' file -->
                     <plugin>
-                        <groupId>com.bew.mojo</groupId>
-                        <artifactId>simple-buildnumber-maven-plugin</artifactId>
+                        <groupId>com.bewsoftware.mojo</groupId>
+                        <artifactId>bewsoftware-mdj-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>Release</id>
+                                <id>MDj-Clean-Publish-Manual</id>
                                 <goals>
-                                    <goal>create-xml</goal>
+                                    <goal>clean</goal>
+                                    <goal>mdj</goal>
+                                    <goal>publish</goal>
                                 </goals>
                                 <configuration>
-                                    <release>true</release>
-                                    <keepNumber>true</keepNumber>
+                                    <disallowBrowserFileCaching>true</disallowBrowserFileCaching>
+                                    <source>${docs.source}</source>
+                                    <destination>${docs.target}</destination>
+                                    <serverContexts>
+                                        <serverContext>
+                                            <context>/</context>
+                                            <htmlSource>${docs.target}</htmlSource>
+                                        </serverContext>
+                                    </serverContexts>
                                 </configuration>
                             </execution>
                         </executions>
@@ -198,10 +239,40 @@
                 </plugins>
             </build>
         </profile>
+
         <profile>
-            <id>release-profile</id>
+            <id>publish-api</id>
             <build>
-                <plugins>                    
+                <plugins>
+                    <plugin>
+                        <groupId>com.bewsoftware.mojo</groupId>
+                        <artifactId>bewsoftware-mdj-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>MDj-Publish-API</id>
+                                <goals>
+                                    <goal>publish</goal>
+                                </goals>
+                                <configuration>
+                                    <disallowBrowserFileCaching>true</disallowBrowserFileCaching>
+                                    <serverContexts>
+                                        <serverContext>
+                                            <context>/api</context>
+                                            <htmlSource>target/${project.build.finalName}-javadoc.jar</htmlSource>
+                                        </serverContext>
+                                    </serverContexts>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>manual-package</id>
+            <build>
+                <plugins>
                     <plugin>
                         <groupId>com.bewsoftware.mojo</groupId>
                         <artifactId>bewsoftware-mdj-plugin</artifactId>
@@ -212,9 +283,9 @@
                                     <goal>mdj</goal>
                                 </goals>
                                 <configuration>
-                                    <source>src/docs/manual</source>
-                                    <destination>target/docs/manual</destination>
-                                    <verbosity>1</verbosity>
+                                    <source>${docs.source}</source>
+                                    <destination>${docs.target}</destination>
+                                    <verbosity/>
                                 </configuration>
                             </execution>
                             <execution>
@@ -223,10 +294,10 @@
                                     <goal>jar</goal>
                                 </goals>
                                 <configuration>
+                                    <jarSrcDir>${docs.target}</jarSrcDir>
                                     <jarFilename>${project.build.finalName}-manual.jar</jarFilename>
-                                    <jarSrcDir>target/docs/manual</jarSrcDir>
-                                    <docRootDir>src/docs/manual</docRootDir>
-                                    <verbosity>1</verbosity>
+                                    <docRootDir>${docs.source}</docRootDir>
+                                    <verbosity/>
                                 </configuration>
                             </execution>
                             <execution>
@@ -235,38 +306,121 @@
                                     <goal>jar</goal>
                                 </goals>
                                 <configuration>
+                                    <jarSrcDir>${docs.source}</jarSrcDir>
                                     <jarFilename>${project.build.finalName}-manual-src.jar</jarFilename>
-                                    <jarSrcDir>src/docs/manual</jarSrcDir>
-                                    <docRootDir>src/docs/manual</docRootDir>
-                                    <verbosity>1</verbosity>
+                                    <docRootDir>${docs.source}</docRootDir>
+                                    <verbosity/>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
+            <id>release-profile</id>
+            <properties>
+                <skip.version.build>true</skip.version.build>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.bewsoftware.mojo</groupId>
+                        <artifactId>bewsoftware-version-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>Release</id>
+                                <goals>
+                                    <goal>release</goal>
+                                </goals>
+                                <configuration>
+                                    <finalBaseNamePropertyName>finalBaseName</finalBaseNamePropertyName>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-resources-plugin</artifactId>
+                        <configuration>
+                            <encoding>${source.encoding}</encoding>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>Copy-Manual-to-build</id>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <phase>prepare-package</phase>
+                                <configuration>
+                                    <outputDirectory>${project.build.outputDirectory}</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>
+                                                target/docs
+                                            </directory>
+                                        </resource>
+                                    </resources>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>Copy-Manual-to-basedir</id>
+                                <goals>
+                                    <goal>copy-resources</goal>
+                                </goals>
+                                <phase>prepare-package</phase>
+                                <configuration>
+                                    <outputDirectory>docs</outputDirectory>
+                                    <resources>
+                                        <resource>
+                                            <directory>
+                                                ${docs.target}
+                                            </directory>
+                                        </resource>
+                                    </resources>
                                 </configuration>
                             </execution>
                         </executions>
                     </plugin>
 
                     <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
+                        <groupId>com.bewsoftware.mojo</groupId>
+                        <artifactId>bewsoftware-mdj-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>Zip Binary Jar and libs</id>
-                                <phase>verify</phase>
+                                <id>MDj-Compile(release)</id>
                                 <goals>
-                                    <goal>exec</goal>
+                                    <goal>mdj</goal>
                                 </goals>
                                 <configuration>
-                                    <executable>zip</executable>
-                                    <workingDirectory>${project.build.directory}</workingDirectory>
-                                    <includeProjectDependencies>false</includeProjectDependencies>
-                                    <includePluginDependencies>true</includePluginDependencies>
-                                    <arguments>
-                                        <argument>-r</argument>
-                                        <argument>${project.build.finalName}.zip</argument>
-                                        <argument>${project.build.finalName}.jar</argument>
-                                        <argument>${project.build.finalName}-manual.jar</argument>
-                                        <argument>${project.build.finalName}-manual-src.jar</argument>
-                                        <!--                                        <argument>libs</argument>-->
-                                    </arguments> 
+                                    <source>${docs.source}</source>
+                                    <destination>${docs.target}</destination>
+                                    <verbosity/>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>MDj-Package(HTML)</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                    <jarFilename>${finalBaseName}-manual.jar</jarFilename>
+                                    <jarSrcDir>${docs.target}</jarSrcDir>
+                                    <docRootDir>${docs.source}</docRootDir>
+                                    <verbosity/>
+                                </configuration>
+                            </execution>
+                            <execution>
+                                <id>MDj-Package(SRC)</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                    <jarFilename>${finalBaseName}-manual-src.jar</jarFilename>
+                                    <jarSrcDir>${docs.source}</jarSrcDir>
+                                    <docRootDir>${docs.source}</docRootDir>
+                                    <verbosity/>
                                 </configuration>
                             </execution>
                         </executions>
@@ -276,7 +430,7 @@
                         <artifactId>maven-install-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>manual</id>                                    
+                                <id>manual</id>
                                 <phase>install</phase>
                                 <goals>
                                     <goal>install-file</goal>
@@ -287,7 +441,7 @@
                                     <version>${project.artifact.version}</version>
                                     <classifier>manual</classifier>
                                     <packaging>jar</packaging>
-                                    <file>${project.build.directory}/${project.build.finalName}-manual.jar</file>
+                                    <file>${project.build.directory}/${finalBaseName}-manual.jar</file>
                                 </configuration>
                             </execution>
                             <execution>
@@ -302,11 +456,11 @@
                                     <version>${project.artifact.version}</version>
                                     <classifier>manual-src</classifier>
                                     <packaging>jar</packaging>
-                                    <file>${project.build.directory}/${project.build.finalName}-manual-src.jar</file>
+                                    <file>${project.build.directory}/${finalBaseName}-manual-src.jar</file>
                                 </configuration>
                             </execution>
                         </executions>
-                    </plugin>          
+                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
@@ -318,85 +472,80 @@
                                 </goals>
                             </execution>
                         </executions>
-                    </plugin>            
-                </plugins>
-            </build>
-        </profile>    
-        <profile>
-            <id>test</id>
-            <properties>
-                <skip.unit.tests>false</skip.unit.tests>
-            </properties>
-        </profile>
-        <!--
-            create a stripped (minimal) jar for resource-limited environments
-            (compiled without debug info, no extra metadata, better compression, etc.)
-            by building with the -Dstripped argument.
-        -->
-        <profile>
-            <id>stripped</id>
-            <activation>
-                <property>
-                    <name>stripped</name>
-                </property>
-            </activation>
-            <properties>
-                <jar.classifier>stripped</jar.classifier>
-            </properties>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-compiler-plugin</artifactId>
-                        <configuration>
-                            <debug>false</debug>
-                        </configuration>
                     </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-jar-plugin</artifactId>
-                        <configuration>
-                            <classifier>${jar.classifier}</classifier>
-                            <excludes>
-                                <exclude>**/LICENSE*.*</exclude>
-                            </excludes>
-                        </configuration>
-                    </plugin>
-                    <!-- repack using pack200 to compress it better -->
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>1.6.0</version>
+                        <artifactId>maven-site-plugin</artifactId>
                         <executions>
                             <execution>
-                                <id>repack</id>
                                 <phase>package</phase>
+                                <id>site-jar</id>
                                 <goals>
-                                    <goal>exec</goal>
+                                    <goal>jar</goal>
                                 </goals>
-                                <configuration>
-                                    <executable>${java.home}/../bin/pack200</executable>
-                                    <arguments>
-                                        <argument>--repack</argument>
-                                        <argument>--effort=9</argument>
-                                        <argument>--segment-limit=-1</argument>
-                                        <argument>--strip-debug</argument>
-                                        <argument>${project.build.directory}/${project.build.finalName}-${jar.classifier}.${project.packaging}</argument>
-                                    </arguments>
-                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <!-- Build the production 'jar' -->
+                    <plugin>
+                        <artifactId>maven-assembly-plugin</artifactId>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src/assembly/distribution.xml</descriptor>
+                                <descriptor>src/assembly/deploy-linux.xml</descriptor>
+                                <descriptor>src/assembly/deploy-win.xml</descriptor>
+                            </descriptors>
+                            <archive>
+                                <manifest>
+                                    <!--                                    <addClasspath>true</addClasspath>
+                                    <classpathPrefix>./</classpathPrefix>-->
+                                    <mainClass>${jar.manifest.mainClass}</mainClass>
+                                    <addBuildEnvironmentEntries>true</addBuildEnvironmentEntries>
+                                    <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                                </manifest>
+                            </archive>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>make-assembly</id> <!-- this is used for inheritance merges -->
+                                <phase>package</phase> <!-- bind to the packaging phase -->
+                                <goals>
+                                    <goal>single</goal>
+                                </goals>
                             </execution>
                         </executions>
                     </plugin>
                 </plugins>
             </build>
         </profile>
+
+        <profile>
+            <id>test</id>
+            <properties>
+                <skip.unit.tests>false</skip.unit.tests>
+            </properties>
+        </profile>
     </profiles>
-    
+
     <build>
         <resources>
             <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/mcpom.properties</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>**/mcpom.properties</exclude>
+                </excludes>
+            </resource>
+            <resource>
                 <directory>
-                    src/docs/manual
+                    src/uml
                 </directory>
                 <excludes>
                     <exclude>
@@ -406,7 +555,27 @@
             </resource>
             <resource>
                 <directory>
-                    target/docs/manual
+                    ${docs.source}
+                </directory>
+                <excludes>
+                    <exclude>
+                        **/*
+                    </exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>
+                    ${docs.target}
+                </directory>
+                <excludes>
+                    <exclude>
+                        **/*
+                    </exclude>
+                </excludes>
+            </resource>
+            <resource>
+                <directory>
+                    docs
                 </directory>
                 <excludes>
                     <exclude>
@@ -421,23 +590,23 @@
                 <plugin>
                     <groupId>com.bewsoftware.mojo</groupId>
                     <artifactId>bewsoftware-mdj-plugin</artifactId>
-                    <version>1.0.35</version>
-                </plugin>                
-                <plugin>                        
-                    <groupId>com.bew.mojo</groupId>
-                    <artifactId>simple-buildnumber-maven-plugin</artifactId>
-                    <version>1.0.15</version>
+                    <version>1.1.7</version>
+                </plugin>
+                <plugin>
+                    <groupId>com.bewsoftware.mojo</groupId>
+                    <artifactId>bewsoftware-version-plugin</artifactId>
+                    <version>1.0.2</version>
                 </plugin>
 
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>3.2.0</version>
+                    <version>3.3.0</version>
                 </plugin>
-                <plugin>                  
+                <plugin>
                     <groupId>org.jacoco</groupId>
                     <artifactId>jacoco-maven-plugin</artifactId>
-                    <version>0.8.6</version>
+                    <version>0.8.8</version>
                 </plugin>
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -445,24 +614,28 @@
                     <version>3.0.0</version>
                 </plugin>
                 <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <version>3.3.0</version>
+                </plugin>
+                <plugin>
                     <artifactId>maven-clean-plugin</artifactId>
-                    <version>3.1.0</version>
-                </plugin>                
+                    <version>3.2.0</version>
+                </plugin>
                 <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.1</version>
-                </plugin>        
-                <plugin>         
+                    <version>3.10.1</version>
+                </plugin>
+                <plugin>
                     <artifactId>maven-dependency-plugin</artifactId>
-                    <version>3.1.2</version>
+                    <version>3.3.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-deploy-plugin</artifactId>
-                    <version>3.0.0-M1</version>
+                    <version>3.0.0-M2</version>
                 </plugin>
-                <plugin>                
+                <plugin>
                     <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>3.0.0-M5</version>
+                    <version>3.0.0-M7</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-install-plugin</artifactId>
@@ -470,31 +643,31 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-invoker-plugin</artifactId>
-                    <version>3.2.1</version>
+                    <version>3.3.0</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.2.0</version>
+                    <version>3.2.2</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-javadoc-plugin</artifactId>
-                    <version>3.2.0</version>
-                </plugin>     
-                <plugin>                
+                    <version>3.4.0</version>
+                </plugin>
+                <plugin>
                     <artifactId>maven-jxr-plugin</artifactId>
-                    <version>3.0.0</version>
-                </plugin>               
+                    <version>3.2.0</version>
+                </plugin>
                 <plugin>
                     <artifactId>maven-plugin-plugin</artifactId>
-                    <version>3.6.0</version>
+                    <version>3.6.4</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-project-info-reports-plugin</artifactId>
-                    <version>3.1.1</version>
+                    <version>3.3.0</version>
                 </plugin>
-                <plugin>                
+                <plugin>
                     <artifactId>maven-release-plugin</artifactId>
-                    <version>3.0.0-M1</version>
+                    <version>3.0.0-M6</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
@@ -502,127 +675,123 @@
                 </plugin>
                 <plugin>
                     <artifactId>maven-scm-plugin</artifactId>
-                    <version>1.11.2</version>
+                    <version>2.0.0-M1</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-site-plugin</artifactId>
-                    <version>3.9.1</version>
-                </plugin>                
+                    <version>4.0.0-M1</version>
+                </plugin>
                 <plugin>
                     <artifactId>maven-source-plugin</artifactId>
                     <version>3.2.1</version>
                 </plugin>
                 <plugin>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>3.0.0-M5</version>
+                    <version>3.0.0-M7</version>
                 </plugin>
             </plugins>
         </pluginManagement>
 
-        <plugins>                       
+        <plugins>
             <plugin>
                 <groupId>com.bewsoftware.mojo</groupId>
-                <artifactId>bewsoftware-mdj-plugin</artifactId>
+                <artifactId>bewsoftware-version-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>MDj-Compile(default)</id>
+                        <id>Build</id>
                         <goals>
-                            <goal>mdj</goal>
+                            <goal>build</goal>
                         </goals>
                         <configuration>
-                            <source>src/docs/manual</source>
-                            <destination>target/docs/manual</destination>
-                            <verbosity></verbosity>
+                            <skip>${skip.version.build}</skip>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
-  
+            <!--================== Maven JavaDoc ==================-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
                 <configuration>
-                    <source>${maven.compiler.source}</source>
-                    <release>${maven.compiler.target}</release>
+                    <docfilessubdirs>true</docfilessubdirs>
+                    <source>${javadoc.source.version}</source>
+                    <links>
+                        <link>${javadoc.link.url.jdk}</link>
+                    </links>
+                    <minmemory>128m</minmemory>
+                    <maxmemory>1g</maxmemory>
+                    <bottom>
+                        Copyright © {currentYear} Bradley Willcott. All rights reserved.
+                    </bottom>
+                    <outputDirectory>${javadoc.reporting.outputDirectory}</outputDirectory>
+                    <tags>
+                        <tag>
+                            <name>Note</name>
+                            <placement>a</placement>
+                            <head>Note:</head>
+                        </tag>
+                        <tag>
+                            <name>apiNote</name>
+                            <placement>a</placement>
+                            <head>API Note:</head>
+                        </tag>
+                        <tag>
+                            <name>implSpec</name>
+                            <placement>a</placement>
+                            <head>Implementation Requirements:</head>
+                        </tag>
+                        <tag>
+                            <name>implNote</name>
+                            <placement>a</placement>
+                            <head>Implementation Note:</head>
+                        </tag>
+                        <tag>
+                            <name>param</name>
+                        </tag>
+                        <tag>
+                            <name>return</name>
+                        </tag>
+                        <tag>
+                            <name>throws</name>
+                        </tag>
+                        <tag>
+                            <name>since</name>
+                        </tag>
+                        <tag>
+                            <name>version</name>
+                        </tag>
+                        <tag>
+                            <name>author</name>
+                        </tag>
+                        <tag>
+                            <name>serialData</name>
+                        </tag>
+                        <tag>
+                            <name>see</name>
+                        </tag>
+                    </tags>
                 </configuration>
-            </plugin>
-            <!--            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-            </plugin>-->
-            <!--            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-scm-plugin</artifactId>
-                <dependencies>
-                    <dependency>
-                        <groupId>org.apache.maven.scm</groupId>
-                        <artifactId>maven-scm-provider-gitexe</artifactId>
-                        <version>1.11.2</version>
-                    </dependency>
-                </dependencies>
-            </plugin>-->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <configuration>
-                    <debug>true</debug>
-                    <showDeprecation>true</showDeprecation>
-                    <source>${maven.compiler.source}</source>
-                    <target>${maven.compiler.target}</target>
-                    <release>${java.version}</release>
-                    <encoding>${source.encoding}</encoding>
-                    <compilerArgs>
-                        <arg>-Xlint:all</arg>
-                    </compilerArgs>
-                </configuration>
+                <executions>
+                    <execution>
+                        <id>javadoc</id>
+                        <goals>
+                            <goal>javadoc-no-fork</goal>
+                        </goals>
+                        <phase>site</phase>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-site-plugin</artifactId>
-                <configuration>
-                    <locales>en</locales>
-                </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-resources-plugin</artifactId>
-                <configuration>
-                    <encoding>${source.encoding}</encoding>
-                </configuration>
-<!--                <executions>
-                    <execution>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <phase>prepare-package</phase>
-                        <configuration>
-                            <outputDirectory>${project.build.outputDirectory}</outputDirectory>
-                            <resources>
-                                <resource>
-                                    <directory>
-                                        target/docs
-                                    </directory>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>-->
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-project-info-reports-plugin</artifactId>
-            </plugin>
-            <!--            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                     Skips unit tests if the value of skip.unit.tests property is true 
+                    <!-- Skips unit tests if the value of skip.unit.tests property is true -->
                     <skipTests>${skip.unit.tests}</skipTests>
-                    <argLine></argLine>     
+                    <argLine/>
                     <includes>
                         <include>**/*.java</include>
                     </includes>
@@ -630,21 +799,26 @@
                         <exclude>**/TestResultPair.java</exclude>
                     </excludes>
                 </configuration>
-            </plugin>-->
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.bewsoftware.httpserver.HTTPServer</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>libs/</classpathPrefix>
+                            <mainClass>${jar.manifest.mainClass}</mainClass>
                             <addBuildEnvironmentEntries>true</addBuildEnvironmentEntries>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                         </manifest>
+                        <manifestEntries>
+                            <Automatic-Module-Name>bewsoftware.mdj.cli</Automatic-Module-Name>
+                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>
-            <!--            <plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
@@ -656,24 +830,30 @@
                         </goals>
                         <configuration>
                             <includeScope>runtime</includeScope>
-                            <excludeScope>test</excludeScope>
                             <outputDirectory>
                                 ${project.build.directory}/libs
                             </outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>  -->
-            <!-- make it an OSGi bundle -->
+            </plugin>
             <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <version>5.1.1</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <failOnError>false</failOnError>
+                    <showWarnings>true</showWarnings>
+                    <showDeprecation>true</showDeprecation>
+                    <encoding>${source.encoding}</encoding>
+                    <compilerArgs>
+                        <arg>--enable-preview</arg>
+                        <arg>-Xlint:all</arg>
+                    </compilerArgs>
+                </configuration>
             </plugin>
         </plugins>
-        
     </build>
-    
+
     <reporting>
         <plugins>
             <plugin>
