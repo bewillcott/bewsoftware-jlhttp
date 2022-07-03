@@ -36,6 +36,8 @@ import javax.swing.JOptionPane;
 import static com.bewsoftware.httpserver.NetUtils.handleTransaction;
 import static com.bewsoftware.httpserver.Utils.openURL;
 import static com.bewsoftware.httpserver.Utils.split;
+import static com.bewsoftware.httpserver.util.Constants.DISPLAY;
+import static com.bewsoftware.httpserver.util.MCPOMProperties.INSTANCE;
 import static java.lang.System.exit;
 
 /**
@@ -166,6 +168,7 @@ import static java.lang.System.exit;
  * @since 2008-07-24
  * @version 2.5.8
  */
+@SuppressWarnings("ProtectedField")
 public class HTTPServer
 {
 
@@ -206,7 +209,7 @@ public class HTTPServer
      * <p>
      * Added by: Bradley Willcott (2020/12/08)
      */
-    public static final String VERSION = "v2.5.8";
+    public static final String VERSION = "v" + INSTANCE.version;
 
     /**
      * Date format string.
@@ -386,7 +389,8 @@ public class HTTPServer
     {
         for (String suffix : suffixes)
         {
-            contentTypes.put(suffix.toLowerCase(Locale.US), contentType.toLowerCase(Locale.US));
+            contentTypes.put(suffix.toLowerCase(Locale.US),
+                    contentType.toLowerCase(Locale.US));
         }
     }
 
@@ -435,7 +439,8 @@ public class HTTPServer
     public static String getContentType(String path, String def)
     {
         int dot = path.lastIndexOf('.');
-        String type = dot < 0 ? def : contentTypes.get(path.substring(dot + 1).toLowerCase(Locale.US));
+        String type = dot < 0 ? def : contentTypes.get(path.substring(dot + 1)
+                .toLowerCase(Locale.US));
         return type != null ? type : def;
     }
 
@@ -454,8 +459,10 @@ public class HTTPServer
 
         for (String s : compressibleContentTypes)
         {
-            if (s.equals(ct) || s.charAt(0) == '*' && ct.endsWith(s.substring(1))
-                    || s.charAt(s.length() - 1) == '*' && ct.startsWith(s.substring(0, s.length() - 1)))
+            if (s.equals(ct) || s.charAt(0) == '*'
+                    && ct.endsWith(s.substring(1))
+                    || s.charAt(s.length() - 1) == '*'
+                    && ct.startsWith(s.substring(0, s.length() - 1)))
             {
                 return true;
             }
@@ -546,7 +553,7 @@ public class HTTPServer
 
             server.start();
             String msg = TITLE + " (" + VERSION + ") is listening on port " + server.port;
-            System.out.println(msg);
+            DISPLAY.level(0).println(msg);
             openURL(new URL("http", "localhost", server.port, "/"));
 
             // GUI dialog to show server running, with button to
@@ -566,7 +573,7 @@ public class HTTPServer
             exit(0);
         } catch (IOException | NumberFormatException e)
         {
-            System.err.println("error: " + e);
+            DISPLAY.level(0).println("error: " + e);
         }
     } //=====================================================================================
 
@@ -678,6 +685,7 @@ public class HTTPServer
      *
      * @return the virtual host with the given name, or null if it doesn't exist
      */
+    @SuppressWarnings("element-type-mismatch")
     public VirtualHost getVirtualHost(String name)
     {
         return hosts.get(name == null ? "" : name);
@@ -850,8 +858,8 @@ public class HTTPServer
      */
     protected void handleConnection(InputStream in, OutputStream out) throws IOException
     {
-        in = new BufferedInputStream(in, 4096);
-        out = new BufferedOutputStream(out, 4096);
+        BufferedInputStream bis = new BufferedInputStream(in, 4096);
+        BufferedOutputStream bos = new BufferedOutputStream(out, 4096);
         Request req;
         Response resp;
 
@@ -859,12 +867,12 @@ public class HTTPServer
         {
             // create request and response and handle transaction
             req = null;
-            resp = new Response(out, disallowBrowserFileCaching);
+            resp = new Response(bos, disallowBrowserFileCaching);
             try
             {
-                req = new Request(in, this);
+                req = new Request(bis, this);
                 handleTransaction(req, resp);
-            } catch (Throwable t)
+            } catch (IOException t)
             { // unhandled errors (not normal error responses like 404)
 
                 if (req == null)
@@ -885,8 +893,9 @@ public class HTTPServer
                     }
                 } else if (!resp.headersSent())
                 { // if headers were not already sent, we can send an error response
-                    t.printStackTrace();
-                    resp = new Response(out, disallowBrowserFileCaching); // ignore whatever headers may have already been set
+                    DISPLAY.level(0).appendln(t.getMessage());
+
+                    resp = new Response(bos, disallowBrowserFileCaching); // ignore whatever headers may have already been set
                     resp.getHeaders().add("Connection", "close"); // about to close connection
                     resp.sendError(500, "Error processing request: " + t);
                 } // otherwise just abort the connection since we can't recover
@@ -896,11 +905,17 @@ public class HTTPServer
             {
                 resp.close(); // close response and flush output
             }
+
             // consume any leftover body data so next request can be processed
-            FileUtils.transfer(req.getBody(), null, -1);
+            if (req != null)
+            {
+                FileUtils.transfer(req.getBody(), null, -1);
+            }
+
             // RFC7230#6.6: persist connection unless client or server close explicitly (or legacy client)
-        } while (!"close".equalsIgnoreCase(req.getHeaders().get("Connection"))
-                && !"close".equalsIgnoreCase(resp.getHeaders().get("Connection")) && req.getVersion().endsWith("1.1"));
+        } while (req != null && !"close".equalsIgnoreCase(req.getHeaders().get("Connection"))
+                && !"close".equalsIgnoreCase(resp.getHeaders().get("Connection"))
+                && req.getVersion().endsWith("1.1"));
     }
 
 }

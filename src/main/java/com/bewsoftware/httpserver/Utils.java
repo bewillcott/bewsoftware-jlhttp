@@ -21,16 +21,14 @@
  */
 package com.bewsoftware.httpserver;
 
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URL;
+import java.net.URLDecoder;
 import java.util.*;
 
-import static com.bewsoftware.httpserver.HTTPServer.DAYS;
-import static com.bewsoftware.httpserver.HTTPServer.GMT;
-import static com.bewsoftware.httpserver.HTTPServer.MONTHS;
-import static com.bewsoftware.httpserver.HTTPServer.isMac;
-import static com.bewsoftware.httpserver.HTTPServer.isUnix;
-import static com.bewsoftware.httpserver.HTTPServer.isWindows;
+import static com.bewsoftware.httpserver.HTTPServer.*;
+import static com.bewsoftware.httpserver.util.Constants.DISPLAY;
 
 /**
  * Utils class contains helper methods from the original HTTPServer class.
@@ -40,7 +38,14 @@ import static com.bewsoftware.httpserver.HTTPServer.isWindows;
  * @since 2.5.3
  * @version 2.5.3
  */
-public class Utils {
+public class Utils
+{
+    /**
+     * Not intended to be instantiated.
+     */
+    private Utils()
+    {
+    }
 
     /**
      * Returns an HTML-escaped version of the given string for safe display
@@ -53,9 +58,11 @@ public class Utils {
      *
      * @return the escaped string
      *
-     * @see <a href="http://www.w3.org/International/questions/qa-escapes">The W3C FAQ</a>
+     * @see <a href="http://www.w3.org/International/questions/qa-escapes">The
+     * W3C FAQ</a>
      */
-    public static String escapeHTML(String s) {
+    public static String escapeHTML(String s)
+    {
         int len = s.length();
         StringBuilder sb = new StringBuilder(len + 30);
         int start = 0;
@@ -66,21 +73,16 @@ public class Utils {
 
             switch (s.charAt(i))
             {
-                case '&':
+                case '&' ->
                     ref = "&amp;";
-                    break;
-                case '>':
+                case '>' ->
                     ref = "&gt;";
-                    break;
-                case '<':
+                case '<' ->
                     ref = "&lt;";
-                    break;
-                case '"':
+                case '"' ->
                     ref = "&quot;";
-                    break;
-                case '\'':
+                case '\'' ->
                     ref = "&#39;";
-                    break;
             }
 
             if (ref != null)
@@ -100,7 +102,8 @@ public class Utils {
      *
      * @return the given time value as a string in RFC 1123 format
      */
-    public static String formatDate(long time) {
+    public static String formatDate(long time)
+    {
         // this implementation performs far better than SimpleDateFormat instances, and even
         // quite better than ThreadLocal SDFs - the server's CPU-bound benchmark gains over 20%!
         if (time < -62167392000000L || time > 253402300799999L)
@@ -148,7 +151,9 @@ public class Utils {
      *
      * @return the byte array
      */
-    public static byte[] getBytes(String... strings) {
+    @SuppressWarnings("ValueOfIncrementOrDecrementUsed")
+    public static byte[] getBytes(String... strings)
+    {
         int n = 0;
 
         for (String s : strings)
@@ -180,7 +185,8 @@ public class Utils {
      *
      * @return the joined string
      */
-    public static <T> String join(String delim, Iterable<T> items) {
+    public static <T> String join(String delim, Iterable<T> items)
+    {
         StringBuilder sb = new StringBuilder();
 
         for (Iterator<T> it = items.iterator(); it.hasNext();)
@@ -205,7 +211,8 @@ public class Utils {
      *
      * @return true if the ETag is matched, false otherwise
      */
-    public static boolean match(boolean strong, String[] etags, String etag) {
+    public static boolean match(boolean strong, String[] etags, String etag)
+    {
         if (etag == null || strong && etag.startsWith("W/"))
         {
             return false;
@@ -234,7 +241,8 @@ public class Utils {
      * @throws IOException          if any.
      * @throws InterruptedException if any.
      */
-    public static int openURL(URL url) throws IOException, InterruptedException {
+    public static int openURL(URL url) throws IOException, InterruptedException
+    {
         Runtime rt = Runtime.getRuntime();
         int rtn = 0;
 
@@ -242,8 +250,12 @@ public class Utils {
         {
             if (isWindows())
             {
-                rtn = rt.exec("rundll32 url.dll,FileProtocolHandler " + url).waitFor();
-                System.out.println("Browser: " + url);
+                String[] cmd =
+                {
+                    "rundll32", "url.dll,FileProtocolHandler", url.toString()
+                };
+                rtn = rt.exec(cmd).waitFor();
+                DISPLAY.level(0).println("Browser: " + url);
             } else if (isMac())
             {
                 String[] cmd =
@@ -251,7 +263,7 @@ public class Utils {
                     "open", url.toString()
                 };
                 rtn = rt.exec(cmd).waitFor();
-                System.out.println("Browser: " + url);
+                DISPLAY.level(0).println("Browser: " + url);
             } else if (isUnix())
             {
                 String[] cmd =
@@ -259,7 +271,7 @@ public class Utils {
                     "xdg-open", url.toString()
                 };
                 rtn = rt.exec(cmd).waitFor();
-                System.out.println("Browser: " + url);
+                DISPLAY.level(0).println("Browser: " + url);
             } else
             {
                 try
@@ -267,7 +279,7 @@ public class Utils {
                     throw new IllegalStateException();
                 } catch (IllegalStateException ex)
                 {
-                    System.err.println("desktop.not.supported");
+                    DISPLAY.level(0).println("desktop.not.supported");
                     throw ex;
                 }
             }
@@ -298,7 +310,8 @@ public class Utils {
      * @return the parameter name-value pairs parsed from the given string,
      *         or an empty list if there are none
      */
-    public static List<String[]> parseParamsList(String s) {
+    public static List<String[]> parseParamsList(String s)
+    {
         if (s == null || s.length() == 0)
         {
             return Collections.emptyList();
@@ -340,7 +353,8 @@ public class Utils {
      *
      * @return the requested range, or null if the range value is invalid
      */
-    public static long[] parseRange(String range, long length) {
+    public static long[] parseRange(String range, long length)
+    {
         long min = Long.MAX_VALUE;
         long max = Long.MIN_VALUE;
         try
@@ -414,7 +428,8 @@ public class Utils {
      * @throws NumberFormatException if the string does not contain a parsable
      *                               long, or if it starts with an ASCII minus sign or plus sign
      */
-    public static long parseULong(String s, int radix) throws NumberFormatException {
+    public static long parseULong(String s, int radix) throws NumberFormatException
+    {
         long val = Long.parseLong(s, radix); // throws NumberFormatException
 
         if (s.charAt(0) == '-' || s.charAt(0) == '+')
@@ -432,11 +447,17 @@ public class Utils {
      *
      * @param str        the string to split
      * @param delimiters the characters used as the delimiters between elements
-     * @param limit      if positive, limits the returned array size (remaining of str in last element)
+     * @param limit      if positive, limits the returned array size (remaining
+     *                   of str in last element)
      *
      * @return the non-empty elements in the string, or an empty array
      */
-    public static String[] split(String str, String delimiters, int limit) {
+    @SuppressWarnings(
+            {
+                "empty-statement", "ValueOfIncrementOrDecrementUsed", "AssignmentToMethodParameter"
+            })
+    public static String[] split(String str, String delimiters, int limit)
+    {
         if (str == null)
         {
             return new String[0];
@@ -448,7 +469,7 @@ public class Utils {
         while (start < len)
         {
             for (end = --limit == 0 ? len : start;
-                 end < len && delimiters.indexOf(str.charAt(end)) < 0; end++);
+                    end < len && delimiters.indexOf(str.charAt(end)) < 0; end++);
 
             String element = str.substring(start, end).trim();
 
@@ -458,7 +479,7 @@ public class Utils {
             }
             start = end + 1;
         }
-        return elements.toArray(new String[elements.size()]);
+        return elements.toArray(String[]::new);
     }
 
     /**
@@ -472,24 +493,28 @@ public class Utils {
      *
      * @return the non-empty elements in the list, or an empty array
      */
-    public static String[] splitElements(String list, boolean lower) {
+    public static String[] splitElements(String list, boolean lower)
+    {
         return split(lower && list != null ? list.toLowerCase(Locale.US) : list, ",", -1);
     }
 
     /**
      * Converts a collection of pairs of objects (arrays of size two,
      * each representing a key and corresponding value) into a Map.
-     * Duplicate keys are ignored (only the first occurrence of each key is considered).
+     * Duplicate keys are ignored (only the first occurrence of each key is
+     * considered).
      * The map retains the original collection's iteration order.
      *
-     * @param pairs a collection of arrays, each containing a key and corresponding value
+     * @param pairs a collection of arrays, each containing a key and
+     *              corresponding value
      * @param <K>   the key type
      * @param <V>   the value type
      *
      * @return a map containing the paired keys and values, or an empty map
      */
     @SuppressWarnings("unchecked")
-    public static <K, V> Map<K, V> toMap(Collection<? extends Object[]> pairs) {
+    public static <K, V> Map<K, V> toMap(Collection<? extends Object[]> pairs)
+    {
         if (pairs == null || pairs.isEmpty())
         {
             return Collections.emptyMap();
@@ -515,7 +540,9 @@ public class Utils {
      *
      * @return a human-friendly string approximating the given data size
      */
-    public static String toSizeApproxString(long size) {
+    @SuppressWarnings("empty-statement")
+    public static String toSizeApproxString(long size)
+    {
         final char[] units =
         {
             ' ', 'K', 'M', 'G', 'T', 'P', 'E'
@@ -539,7 +566,12 @@ public class Utils {
      * @return the given string with duplicate consecutive occurrences of c
      *         replaced by a single instance of c
      */
-    public static String trimDuplicates(String s, char c) {
+    @SuppressWarnings(
+            {
+                "empty-statement", "AssignmentToMethodParameter"
+            })
+    public static String trimDuplicates(String s, char c)
+    {
         int start = 0;
 
         while ((start = s.indexOf(c, start) + 1) > 0)
@@ -565,7 +597,9 @@ public class Utils {
      *
      * @return the trimmed string
      */
-    public static String trimLeft(String s, char c) {
+    @SuppressWarnings("empty-statement")
+    public static String trimLeft(String s, char c)
+    {
         int len = s.length();
         int start;
 
@@ -583,19 +617,15 @@ public class Utils {
      *
      * @return the trimmed string
      */
-    public static String trimRight(String s, char c) {
+    @SuppressWarnings("empty-statement")
+    public static String trimRight(String s, char c)
+    {
         int len = s.length() - 1;
         int end;
 
         for (end = len; end >= 0 && s.charAt(end) == c; end--);
 
         return end == len ? s : s.substring(0, end + 1);
-    }
-
-    /**
-     * Not intended to be instantiated.
-     */
-    private Utils() {
     }
 
 }

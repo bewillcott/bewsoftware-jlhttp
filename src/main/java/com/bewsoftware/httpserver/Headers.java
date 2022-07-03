@@ -46,7 +46,9 @@ import static com.bewsoftware.httpserver.Utils.trimRight;
  * Header names are treated case-insensitively, although this class retains
  * their original case. Header insertion order is maintained as well.
  */
-public class Headers implements Iterable<Header> {
+@SuppressWarnings("ProtectedField")
+public class Headers implements Iterable<Header>
+{
 
     // due to the requirements of case-insensitive name comparisons,
     // retaining the original case, and retaining header insertion order,
@@ -55,7 +57,12 @@ public class Headers implements Iterable<Header> {
     // linear access times, which proves to be more efficient and
     // straightforward than the alternatives
     protected Header[] arrHeader = new Header[12];
+
     protected int count;
+
+    public Headers()
+    {
+    }
 
     /**
      * Adds a header with the given name and value to the end of this
@@ -64,7 +71,8 @@ public class Headers implements Iterable<Header> {
      * @param name  the header name (case insensitive)
      * @param value the header value
      */
-    public void add(String name, String value) {
+    public void add(String name, String value)
+    {
         Header header = new Header(name, value); // also validates
 
         // expand array if necessary
@@ -84,7 +92,8 @@ public class Headers implements Iterable<Header> {
      *
      * @param headers the arrHeader to add
      */
-    public void addAll(Headers headers) {
+    public void addAll(Headers headers)
+    {
         for (Header header : headers)
         {
             add(header.getName(), header.getValue());
@@ -98,7 +107,8 @@ public class Headers implements Iterable<Header> {
      *
      * @return whether there exists a header with the given name
      */
-    public boolean contains(String name) {
+    public boolean contains(String name)
+    {
         return get(name) != null;
     }
 
@@ -109,7 +119,8 @@ public class Headers implements Iterable<Header> {
      *
      * @return the header value, or null if none exists
      */
-    public String get(String name) {
+    public String get(String name)
+    {
         for (int i = 0; i < count; i++)
         {
             if (arrHeader[i].getName().equalsIgnoreCase(name))
@@ -128,7 +139,8 @@ public class Headers implements Iterable<Header> {
      * @return the header value as a Date, or null if none exists
      *         or if the value is not in any supported date format
      */
-    public Date getDate(String name) {
+    public Date getDate(String name)
+    {
         try
         {
             String header = get(name);
@@ -148,7 +160,8 @@ public class Headers implements Iterable<Header> {
      *
      * @return the header's parameter names and values
      */
-    public Map<String, String> getParams(String name) {
+    public Map<String, String> getParams(String name)
+    {
         Map<String, String> params = new LinkedHashMap<>();
 
         for (String param : split(get(name), ";", -1))
@@ -168,7 +181,8 @@ public class Headers implements Iterable<Header> {
      * @return an Iterator over the arrHeader
      */
     @Override
-    public Iterator<Header> iterator() {
+    public Iterator<Header> iterator()
+    {
         // we use the built-in wrapper instead of a trivial custom implementation
         // since even a tiny anonymous class here compiles to a 1.5K class file
         return Arrays.asList(arrHeader).subList(0, count).iterator();
@@ -179,7 +193,8 @@ public class Headers implements Iterable<Header> {
      *
      * @param name the header name (case insensitive)
      */
-    public void remove(String name) {
+    public void remove(String name)
+    {
         int j = 0;
 
         for (int i = 0; i < count; i++)
@@ -206,7 +221,8 @@ public class Headers implements Iterable<Header> {
      *
      * @return the replaced header, or null if none existed
      */
-    public Header replace(String name, String value) {
+    public Header replace(String name, String value)
+    {
         for (int i = 0; i < count; i++)
         {
             if (arrHeader[i].getName().equalsIgnoreCase(name))
@@ -226,7 +242,8 @@ public class Headers implements Iterable<Header> {
      *
      * @return the number of added arrHeader
      */
-    public int size() {
+    public int size()
+    {
         return count;
     }
 
@@ -237,7 +254,8 @@ public class Headers implements Iterable<Header> {
      *
      * @throws IOException if an error occurs
      */
-    public void writeTo(OutputStream out) throws IOException {
+    public void writeTo(OutputStream out) throws IOException
+    {
         for (int i = 0; i < count; i++)
         {
             out.write(getBytes(arrHeader[i].getName(), ": ", arrHeader[i].getValue()));

@@ -31,19 +31,26 @@ import static com.bewsoftware.httpserver.NetUtils.readHeaders;
 import static com.bewsoftware.httpserver.Utils.getBytes;
 
 /**
- * The {@code MultipartIterator} iterates over the parts of a multipart/form-data request.
+ * The {@code MultipartIterator} iterates over the parts of a
+ * multipart/form-data request.
  * <p>
  * For example, to support file upload from a web browser:
  * <ol>
- * <li>Create an HTML form which includes an input field of type "file", attributes
- * method="post" and enctype="multipart/form-data", and an action URL of your choice,
+ * <li>Create an HTML form which includes an input field of type "file",
+ * attributes
+ * method="post" and enctype="multipart/form-data", and an action URL of your
+ * choice,
  * for example action="/upload". This form can be served normally like any other
  * resource, e.g. from an HTML file on disk.
- * <li>Add a context handler for the action path ("/upload" in this example), using either
- * the explicit {@link VirtualHost#addContext} method or the {@link Context} annotation.
- * <li>In the context handler implementation, construct a {@code MultipartIterator} from
+ * <li>Add a context handler for the action path ("/upload" in this example),
+ * using either
+ * the explicit {@link VirtualHost#addContext} method or the {@link Context}
+ * annotation.
+ * <li>In the context handler implementation, construct a
+ * {@code MultipartIterator} from
  * the client {@code Request}.
- * <li>Iterate over the form {@link Part}s, processing each named field as appropriate -
+ * <li>Iterate over the form {@link Part}s, processing each named field as
+ * appropriate -
  * for the file input field, read the uploaded file using the body input stream.
  * </ol>
  *
@@ -52,9 +59,11 @@ import static com.bewsoftware.httpserver.Utils.getBytes;
  * @since 1.0
  * @version 2.5.3
  */
-public class MultipartIterator implements Iterator<MultipartIterator.Part> {
+public class MultipartIterator implements Iterator<MultipartIterator.Part>
+{
 
     protected final MultipartInputStream in;
+
     protected boolean next;
 
     /**
@@ -66,7 +75,8 @@ public class MultipartIterator implements Iterator<MultipartIterator.Part> {
      * @throws IllegalArgumentException if the given request's content type
      *                                  is not multipart/form-data, or is missing the boundary
      */
-    public MultipartIterator(Request req) throws IOException {
+    public MultipartIterator(Request req) throws IOException
+    {
         Map<String, String> ct = req.getHeaders().getParams("Content-Type");
 
         if (!ct.containsKey("multipart/form-data"))
@@ -85,7 +95,8 @@ public class MultipartIterator implements Iterator<MultipartIterator.Part> {
     }
 
     @Override
-    public boolean hasNext() {
+    public boolean hasNext()
+    {
         try
         {
             return next || (next = in.nextPart());
@@ -96,7 +107,8 @@ public class MultipartIterator implements Iterator<MultipartIterator.Part> {
     }
 
     @Override
-    public Part next() {
+    public Part next()
+    {
         if (!hasNext())
         {
             throw new NoSuchElementException();
@@ -121,14 +133,17 @@ public class MultipartIterator implements Iterator<MultipartIterator.Part> {
     }
 
     @Override
-    public void remove() {
+    public void remove()
+    {
         throw new UnsupportedOperationException();
     }
 
     /**
      * The {@code Part} class encapsulates a single part of the multipart.
      */
-    public static class Part {
+    @SuppressWarnings("PublicField")
+    public static class Part
+    {
 
         /**
          * The part's body (form field value).
@@ -144,10 +159,15 @@ public class MultipartIterator implements Iterator<MultipartIterator.Part> {
          * The part's Headers.
          */
         public Headers headers;
+
         /**
          * The part's name (form field name).
          */
         public String name;
+
+        public Part()
+        {
+        }
 
         /**
          * *
@@ -158,7 +178,8 @@ public class MultipartIterator implements Iterator<MultipartIterator.Part> {
          *
          * @throws IOException if an IO error occurs
          */
-        public String getString() throws IOException {
+        public String getString() throws IOException
+        {
             String charset = headers.getParams("Content-Type").get("charset");
             charset = charset == null ? "UTF-8" : charset;
             return FileUtils.readToken(body, -1, charset, 8192);

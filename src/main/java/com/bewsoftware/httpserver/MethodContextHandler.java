@@ -77,8 +77,15 @@ public class MethodContextHandler implements ContextHandler, AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
-        ((AutoCloseable) obj).close();
+    public void close()
+    {
+        try
+        {
+            ((AutoCloseable) obj).close();
+        } catch (Exception ex)
+        {
+            // Ignore
+        }
     }
 
     @Override
