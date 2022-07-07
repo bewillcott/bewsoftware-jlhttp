@@ -36,8 +36,8 @@ import javax.swing.JOptionPane;
 import static com.bewsoftware.httpserver.NetUtils.handleTransaction;
 import static com.bewsoftware.httpserver.Utils.openURL;
 import static com.bewsoftware.httpserver.Utils.split;
+import static com.bewsoftware.httpserver.util.BJSPOMProperties.INSTANCE;
 import static com.bewsoftware.httpserver.util.Constants.DISPLAY;
-import static com.bewsoftware.httpserver.util.MCPOMProperties.INSTANCE;
 import static java.lang.System.exit;
 
 /**
@@ -166,7 +166,7 @@ import static java.lang.System.exit;
  *
  * @author Amichai Rothman
  * @since 2008-07-24
- * @version 2.6.3
+ * @version 2.6.4
  */
 @SuppressWarnings("ProtectedField")
 public class HTTPServer
@@ -195,7 +195,7 @@ public class HTTPServer
     /**
      * Response HTTP Header: "Server" setting.
      */
-    public static final String SERVER = "JLHTTP/2.5.8";
+    public static final String SERVER = "JLHTTP/" + INSTANCE.version;
 
     /**
      * Program title.
@@ -540,10 +540,11 @@ public class HTTPServer
                     .getCodeSource()
                     .getLocation()
                     .toURI().toString());
+
             VirtualHost host = server.getVirtualHost(null); // default host
             host.setAllowGeneratedIndex(true); // with directory index pages
 
-            host.addContext("/", new FileContextHandler("/"));
+            host.addContext("/", new FileContextHandler(""));
             host.addContext("/jar", new JarContextHandler(jarURI, "/"));
 
             host.addContext("/time", (Request req, Response resp) ->
@@ -574,9 +575,9 @@ public class HTTPServer
 
             server.stop();
             exit(0);
-        } catch (IOException | NumberFormatException e)
+        } catch (IOException | NumberFormatException ex)
         {
-            DISPLAY.level(0).println("error: " + e);
+            DISPLAY.level(0).println("error: " + ex);
         }
     } //=====================================================================================
 

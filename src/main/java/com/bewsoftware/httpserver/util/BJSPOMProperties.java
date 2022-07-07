@@ -87,13 +87,13 @@ import static com.bewsoftware.httpserver.util.Keys.*;
  * @since 2.6.3
  * @version 2.6.3
  */
-public final class MCPOMProperties
+public final class BJSPOMProperties
 {
 
     /**
      * Provides single instance of this class.
      */
-    public static final MCPOMProperties INSTANCE = new MCPOMProperties();
+    public static final BJSPOMProperties INSTANCE = new BJSPOMProperties();
 
     /**
      * The identifier for this artifact that is unique within
@@ -129,12 +129,13 @@ public final class MCPOMProperties
      */
     public final String version;
 
-    private MCPOMProperties()
+    private BJSPOMProperties()
     {
         Properties properties = new Properties();
+
         try
         {
-            properties.load(MCPOMProperties.class.getResourceAsStream("/mcpom.properties"));
+            properties.load(BJSPOMProperties.class.getResourceAsStream("/bjspom.properties"));
         } catch (IOException ex)
         {
             throw new RuntimeException("FileIOError", ex);
@@ -150,13 +151,13 @@ public final class MCPOMProperties
 
     public static void main(String[] args)
     {
-        DISPLAY.level(0).println(MCPOMProperties.INSTANCE);
+        DISPLAY.level(0).println(BJSPOMProperties.INSTANCE);
     }
 
     @Override
     public String toString()
     {
-        return new StringBuilder(MCPOMProperties.class.getName()).append(":\n")
+        return new StringBuilder(BJSPOMProperties.class.getName()).append(":\n")
                 .append("  name: ").append(name).append("\n")
                 .append("  description: ").append(description).append("\n")
                 .append("  groupId: ").append(groupId).append("\n")

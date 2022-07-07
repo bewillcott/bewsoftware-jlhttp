@@ -1,6 +1,6 @@
 /*
  *  Copyright © 2005-2019 Amichai Rothman
- *  Copyright © 2020 Bradley Willcott
+ *  Copyright © 2020-2022 Bradley Willcott
  *
  *  This file is part of JLHTTP - the Java Lightweight HTTP Server.
  *
@@ -23,7 +23,6 @@ package com.bewsoftware.httpserver;
 
 import java.lang.reflect.Method;
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -37,7 +36,7 @@ import static com.bewsoftware.httpserver.Utils.trimRight;
  * @author <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
  *
  * @since 1.0
- * @version 2.5.3
+ * @version 2.6.4
  */
 @SuppressWarnings("ProtectedField")
 public class VirtualHost
@@ -83,7 +82,7 @@ public class VirtualHost
      * Adds a context and its corresponding context handler to this server.
      * Paths are normalized by removing trailing slashes (except the root).
      *
-     * @param path    the context's path (must start with '/')
+     * @param context the context's path (must start with '/')
      * @param handler the context handler for the given path
      * @param methods the HTTP methods supported by the context handler (default
      *                is "GET")
@@ -91,16 +90,16 @@ public class VirtualHost
      * @throws IllegalArgumentException if path is malformed
      */
     @SuppressWarnings("AssignmentToMethodParameter")
-    public void addContext(String path, ContextHandler handler, String... methods)
+    public void addContext(String context, ContextHandler handler, String... methods)
     {
-        if (path == null || !path.startsWith("/") && !path.equals("*"))
+        if (context == null || !context.startsWith("/") && !context.equals("*"))
         {
-            throw new IllegalArgumentException("invalid path: " + path);
+            throw new IllegalArgumentException("invalid path: " + context);
         }
 
-        path = trimRight(path, '/'); // remove trailing slash
-        ContextInfo info = new ContextInfo(path, this);
-        ContextInfo existing = contexts.putIfAbsent(path, info);
+        context = trimRight(context, '/'); // remove trailing slash
+        ContextInfo info = new ContextInfo(context, this);
+        ContextInfo existing = contexts.putIfAbsent(context, info);
         info = existing != null ? existing : info;
         info.addHandler(handler, methods);
     }

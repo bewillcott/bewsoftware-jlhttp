@@ -23,7 +23,7 @@ package com.bewsoftware.httpserver.util;
 import com.bewsoftware.utils.io.ConsoleIO;
 import com.bewsoftware.utils.io.Display;
 
-import static com.bewsoftware.httpserver.util.MCPOMProperties.INSTANCE;
+import static com.bewsoftware.httpserver.util.BJSPOMProperties.INSTANCE;
 
 /**
  * Contains various constants.
@@ -71,9 +71,9 @@ public class Constants
     public static final String PAGE = "page";
 
     /**
-     * The single instance of the {@link MCPOMProperties} class.
+     * The single instance of the {@link BJSPOMProperties} class.
      */
-    public static final MCPOMProperties POM = INSTANCE;
+    public static final BJSPOMProperties POM = INSTANCE;
 
     public static final String PROGRAM = "program";
 

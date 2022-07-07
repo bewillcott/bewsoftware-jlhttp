@@ -1,0 +1,117 @@
+/*
+This file is part of the MDj Command-line Interface program 
+(aka: mdj-cli).
+
+Copyright (C) 2020 Bradley Willcott
+
+mdj-cli is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+mdj-cli is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+/* 
+    Created on : 13 Dec 2020, 6:32:16 pm
+    Author     : <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
+*/
+
+div.navbar ul {
+    font-size:12px;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: auto;
+    background-color: #f1f1f1;
+}
+
+div.navbar li {
+    float: left;
+}
+
+div.navbar li a {
+    display: inline-block;
+    color: black;
+    text-align: center;
+    padding: 8px 10px;
+    text-decoration: none;
+}
+
+div.navbar li a.icon, a.icon {
+    margin: 0;
+    padding-top: 2px;
+    padding-bottom: 0;
+    padding-left: 4px;
+    padding-right: 6px;
+}
+
+div.navbar * li:not(.active) a:hover {
+    background-color: #555;
+    color: white;
+}
+
+div.navbar li.active {
+    background-color: #4CAF50;
+}
+
+div.navbar li.right {
+    float: right;
+}
+
+div.navbar li.dropdown.subactive {
+    background-color: lightgreen;
+}
+
+div.navbar li.dropdown {
+    display: inline-block;
+}
+
+div.navbar ul.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+div.navbar ul.dropdown-content li {
+    float: none;
+}
+
+div.navbar ul.dropdown-content a {
+    color: black;
+    padding: 10px 10px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+}
+
+div.navbar li.dropdown:hover ul.dropdown-content {
+    display: block;
+}
+
+@media screen and (max-width: 600px) {
+    div.navbar ul li.right, 
+    div.navbar ul li {float: none;}
+}
+
+header {
+    background-color: #33b5e5;
+    display: block;
+    margin: 0;
+    padding: 2px;
+}
+
+header p {
+    font-size:20px;
+    text-align: center;
+    margin: 0;
+    padding: 5px;
+    font-weight: bold;
+}
