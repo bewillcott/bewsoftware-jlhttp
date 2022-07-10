@@ -872,6 +872,7 @@ public class HTTPServer
             // create request and response and handle transaction
             req = null;
             resp = new Response(bos, disallowBrowserFileCaching);
+
             try
             {
                 req = new Request(bis, this);

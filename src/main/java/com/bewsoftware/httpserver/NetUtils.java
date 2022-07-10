@@ -44,7 +44,7 @@ import static java.lang.String.join;
  * @author <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
  *
  * @since 2.5.3
- * @version 2.6.3
+ * @version 2.6.5
  */
 public class NetUtils
 {
@@ -248,20 +248,14 @@ public class NetUtils
 
         File file = new File(base, relativePath).getCanonicalFile();
 
-        //
-        // Added matchup with context to prevent use of non-'/' terminated contexts.
-        //
-        // Bradley Willcott (21/12/2020)
-        //
-        if (req.getPath().equals(context))
-        { // redirect to the normalized directory URL ending with '/'
-            resp.redirect(req.getBaseURL() + req.getPath() + "/", true);
-        } else if (!file.exists() || file.isHidden() || file.getName().startsWith("."))
+        if (!file.exists() || file.isHidden() || file.getName().startsWith("."))
         {
             return 404;
+
         } else if (!file.canRead() || !file.getPath().startsWith(base.getPath()))
         { // validate
             return 403;
+
         } else if (file.isDirectory())
         {
             if (relativePath.endsWith("/"))
@@ -276,9 +270,11 @@ public class NetUtils
             { // redirect to the normalized directory URL ending with '/'
                 resp.redirect(req.getBaseURL() + req.getPath() + "/", true);
             }
+
         } else if (relativePath.endsWith("/"))
         {
             return 404; // non-directory ending with slash (File constructor removed it)
+
         } else
         {
             serveFileContent(file, req, resp);
@@ -313,34 +309,38 @@ public class NetUtils
             Request req, Response resp) throws IOException
     {
 
+        String relativePath = req.getPath().substring(context.length());
+
         Path filePath = jarFS.getPath(req.getPath().substring(context.length()));
 
-        //
-        // Added matchup with context to prevent use of non-'/' terminated contexts.
-        //
-        // Bradley Willcott (21/12/2020)
-        //
-        if (req.getPath().equals(context))
-        { // redirect to the normalized directory URL ending with '/'
-            resp.redirect(req.getBaseURL() + req.getPath() + "/", true);
-        } else if (!Files.exists(filePath) || Files.isHidden(filePath)
+        if (!Files.exists(filePath) || Files.isHidden(filePath)
                 || filePath.startsWith("."))
         {
             return 404;
+
         } else if (!Files.isReadable(filePath))
         { // validate
             return 403;
+
         } else if (Files.isDirectory(filePath))
         {
-            if (!req.getVirtualHost().isAllowGeneratedIndex())
+            if (relativePath.endsWith("/"))
             {
-                return 403;
+                if (!req.getVirtualHost().isAllowGeneratedIndex())
+                {
+                    return 403;
+                }
+
+                resp.send(200, createIndex(filePath, req.getPath()));
+            } else
+            { // redirect to the normalized directory URL ending with '/'
+                resp.redirect(req.getBaseURL() + req.getPath() + "/", true);
             }
 
-            resp.send(200, createIndex(filePath, req.getPath()));
         } else if (filePath.endsWith("/"))
         {
             return 404; // non-directory ending with slash (File constructor removed it)
+
         } else
         {
             serveFileContent(filePath, req, resp);
@@ -432,14 +432,11 @@ public class NetUtils
                 // send OK response
                 resp.sendHeaders(200, len, lastModified, etag,
                         getContentType(file.getName(), "application/octet-stream"), range);
-                // send body
-                InputStream in = new FileInputStream(file);
-                try
+
+                try ( // send body
+                          InputStream in = new FileInputStream(file))
                 {
                     resp.sendBody(in, len, range);
-                } finally
-                {
-                    in.close();
                 }
             }
 
