@@ -4,7 +4,7 @@
 
     <groupId>com.bewsoftware</groupId>
     <artifactId>bewsoftware-jlhttp</artifactId>
-    <version>2.6.5</version>
+    <version>2.7.0</version>
     <packaging>jar</packaging>
 
     <name>BEWSoftware JLHTTP Server</name>
@@ -40,23 +40,6 @@
         <skip.unit.tests>true</skip.unit.tests>
         <skip.version.build>false</skip.version.build>
     </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>bewsoftware-utils</artifactId>
-        </dependency>
-    </dependencies>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>${project.groupId}</groupId>
-                <artifactId>bewsoftware-utils</artifactId>
-                <version>2.0.1</version>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
 
     <profiles>
         <profile>

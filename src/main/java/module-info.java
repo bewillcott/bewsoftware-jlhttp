@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020 <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
+ * Copyright (C) 2020-2022 <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,11 +21,10 @@
  * @author <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
  *
  * @since 1.0
- * @version 2.6.3
+ * @version 2.7.0
  */
 module bewsoftware.jlhttp {
     requires java.desktop;
-    requires bewsoftware.utils;
 
     exports com.bewsoftware.httpserver;
 }
