@@ -1,6 +1,6 @@
 # BEWSoftware JLHTTP Server
 
-BEWSoftware JLHTTP is a fork of the origin jlhttp server code: [JLHTTP].
+BEWSoftware JLHTTP is a fork of the original jlhttp server code (v2.5): [JLHTTP].
 
 Please refer to the README.txt file for more details.
 
@@ -12,6 +12,12 @@ documentation.
 To see more about his capability, please refer to another of my projects:
 [BEWSoftware MDj CLI][mdj].
 
+Further, to facilitate development, I have refactored the code into its
+component parts, breaking its original single file status. For its new purpose,
+this is not a problem.
+
+In addition, I have changed the license to the GPL v3 license, as this is what
+all my work is under.
 
 [JLHTTP]:https://www.freeutils.net/source/jlhttp
 [mdj]:https://github.com/bewillcott/bewsoftware-mdj-cli
