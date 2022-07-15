@@ -544,16 +544,16 @@ public class HTTPServer
             VirtualHost host = server.getVirtualHost(null); // default host
             host.setAllowGeneratedIndex(true); // with directory index pages
 
-            host.addContext("/", new FileContextHandler(""));
-            host.addContext("/jar", new JarContextHandler(jarURI, "/"));
+//            host.addContext("/", new FileContextHandler(""));
+            host.addContext("/", new JarContextHandler(jarURI, "/"));
 
-            host.addContext("/time", (Request req, Response resp) ->
-            {
-                long now = System.currentTimeMillis();
-                resp.getHeaders().add("Content-Type", "text/plain");
-                resp.send(200, String.format("Server time: %tF %<tT", now));
-                return 0;
-            });
+//            host.addContext("/time", (Request req, Response resp) ->
+//            {
+//                long now = System.currentTimeMillis();
+//                resp.getHeaders().add("Content-Type", "text/plain");
+//                resp.send(200, String.format("Server time: %tF %<tT", now));
+//                return 0;
+//            });
 
             server.start();
             String msg = TITLE + " (" + VERSION + ") is listening on port " + server.port;
