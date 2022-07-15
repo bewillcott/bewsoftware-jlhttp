@@ -9,7 +9,7 @@ facilitate running the http server from inside a 'jar' file that includes
 static html pages.  The intension being, to create self-contained/self-publishing
 documentation.
 
-To see more about his capability, please refer to another of my projects:
+To see more about this capability, please refer to another of my projects:
 [BEWSoftware MDj CLI][mdj].
 
 Further, to facilitate development, I have refactored the code into its
