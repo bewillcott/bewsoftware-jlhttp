@@ -24,6 +24,7 @@
     </licenses>
 
     <properties>
+        <keep.version.number></keep.version.number>
         <jar.manifest.mainClass>com.bewsoftware.httpserver.HTTPServer</jar.manifest.mainClass>
         <docs.source>src/docs/manual</docs.source>
         <docs.target>target/docs/manual</docs.target>
@@ -364,6 +365,7 @@
                                     <goal>release</goal>
                                 </goals>
                                 <configuration>
+                                    <keep>${keep.verion.number}</keep>
                                     <finalBaseNamePropertyName>finalBaseName</finalBaseNamePropertyName>
                                 </configuration>
                             </execution>
@@ -624,7 +626,7 @@
                 <plugin>
                     <groupId>com.bewsoftware.mojo</groupId>
                     <artifactId>bewsoftware-version-plugin</artifactId>
-                    <version>1.1.0</version>
+                    <version>1.2.0</version>
                 </plugin>
 
                 <plugin>
@@ -732,6 +734,7 @@
                             <goal>build</goal>
                         </goals>
                         <configuration>
+                            <keep>${keep.verion.number}</keep>
                             <skip>${skip.version.build}</skip>
                         </configuration>
                     </execution>
