@@ -224,7 +224,7 @@ public interface Utils
     }
 
     /**
-     * Open the default browser to the URL address.
+     * Open the default browser to the URI address.
      * <p>
      * Added by: Bradley Willcott (2020/12/08)
      *
@@ -237,7 +237,7 @@ public interface Utils
      *
      * @since 2.8.0
      */
-    public static int openURL(final URI uri) throws IOException, InterruptedException
+    public static int openURI(final URI uri) throws IOException, InterruptedException
     {
         Runtime rt = Runtime.getRuntime();
         int rtn = 0;

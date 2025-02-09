@@ -37,12 +37,12 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.swing.JOptionPane;
 
 import static com.bewsoftware.httpserver.NetUtils.handleTransaction;
-import static com.bewsoftware.httpserver.Utils.openURL;
 import static com.bewsoftware.httpserver.Utils.split;
 import static com.bewsoftware.httpserver.util.BJSPOMProperties.INSTANCE;
 import static com.bewsoftware.httpserver.util.Constants.DISPLAY;
 import static com.bewsoftware.utils.io.DisplayDebugLevel.DEFAULT;
 import static java.lang.System.exit;
+import static com.bewsoftware.httpserver.Utils.openURI;
 
 /**
  * The {@code HTTPServer} class implements a light-weight HTTP server.
@@ -569,8 +569,8 @@ public class HTTPServer
             server.start();
             String msg = TITLE + " (" + VERSION + ") is listening on port " + server.port;
             DISPLAY.println(DEFAULT, msg);
-//            openURL(new URL("http", "localhost", server.port, "/"));
-            openURL(new URI(SERVER, null, "localhost", server.port, "/", null, null));
+//            openURI(new URL("http", "localhost", server.port, "/"));
+            openURI(new URI(SERVER, null, "localhost", server.port, "/", null, null));
 
             // GUI dialog to show server running, with button to
             // shutdown server.
