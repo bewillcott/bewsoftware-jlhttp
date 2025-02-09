@@ -415,6 +415,7 @@ public class HTTPServer
                 if (line.length() > 0 && line.charAt(0) != '#')
                 {
                     String[] tokens = split(line, " \t", -1);
+
                     for (int i = 1; i < tokens.length; i++)
                     {
                         addContentType(tokens[0], tokens[i]);
@@ -516,6 +517,7 @@ public class HTTPServer
      * @throws URISyntaxException   if any.
      * @throws InterruptedException if any.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static void main(String[] args) throws URISyntaxException, InterruptedException
     {
         HTTPServer server = null;
@@ -525,7 +527,7 @@ public class HTTPServer
             server = new HTTPServer(DEFAULT_PORT_RANGE[0]);
 
             // set up server
-            File f = new File("/etc/mime.types");
+            File f = new File("/etc/mime.typess");
 
             if (f.exists())
             {
@@ -534,6 +536,12 @@ public class HTTPServer
             {
                 addContentTypes(HTTPServer.class.getResourceAsStream("/etc/mime.types"));
             }
+
+            // Display mime.types
+            contentTypes.forEach((String t, String u) ->
+            {
+                System.out.println(String.format("%s: %s\n", t, u));
+            });
 
             // The containing 'jar' file.
             URI jarURI = URI.create("jar:" + server.getClass().getProtectionDomain()
@@ -554,7 +562,6 @@ public class HTTPServer
 //                resp.send(200, String.format("Server time: %tF %<tT", now));
 //                return 0;
 //            });
-
             server.start();
             String msg = TITLE + " (" + VERSION + ") is listening on port " + server.port;
             DISPLAY.level(0).println(msg);
@@ -627,6 +634,30 @@ public class HTTPServer
     }
 
     /**
+     * Returns the virtual host with the given name.
+     *
+     * @param name the name of the virtual host to return,
+     *             or null for the default virtual host
+     *
+     * @return the virtual host with the given name, or null if it doesn't exist
+     */
+    @SuppressWarnings("element-type-mismatch")
+    public VirtualHost getVirtualHost(String name)
+    {
+        return hosts.get(name == null ? "" : name);
+    }
+
+    /**
+     * Returns all virtual hosts.
+     *
+     * @return all virtual hosts (as an unmodifiable set)
+     */
+    public Set<VirtualHost> getVirtualHosts()
+    {
+        return Collections.unmodifiableSet(new HashSet<>(hosts.values()));
+    }
+
+    /**
      * Sets the executor used in servicing HTTP connections.
      * If null, a default executor is used. The caller is responsible
      * for shutting down the provided executor when necessary.
@@ -679,30 +710,6 @@ public class HTTPServer
     public void setSocketTimeout(int timeout)
     {
         this.socketTimeout = timeout;
-    }
-
-    /**
-     * Returns the virtual host with the given name.
-     *
-     * @param name the name of the virtual host to return,
-     *             or null for the default virtual host
-     *
-     * @return the virtual host with the given name, or null if it doesn't exist
-     */
-    @SuppressWarnings("element-type-mismatch")
-    public VirtualHost getVirtualHost(String name)
-    {
-        return hosts.get(name == null ? "" : name);
-    }
-
-    /**
-     * Returns all virtual hosts.
-     *
-     * @return all virtual hosts (as an unmodifiable set)
-     */
-    public Set<VirtualHost> getVirtualHosts()
-    {
-        return Collections.unmodifiableSet(new HashSet<>(hosts.values()));
     }
 
     /**
