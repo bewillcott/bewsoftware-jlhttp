@@ -22,7 +22,10 @@
 package com.bewsoftware.httpserver;
 
 import java.io.*;
-import java.net.*;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -38,6 +41,7 @@ import static com.bewsoftware.httpserver.Utils.openURL;
 import static com.bewsoftware.httpserver.Utils.split;
 import static com.bewsoftware.httpserver.util.BJSPOMProperties.INSTANCE;
 import static com.bewsoftware.httpserver.util.Constants.DISPLAY;
+import static com.bewsoftware.utils.io.DisplayDebugLevel.DEFAULT;
 import static java.lang.System.exit;
 
 /**
@@ -166,7 +170,7 @@ import static java.lang.System.exit;
  *
  * @author Amichai Rothman
  * @since 2008-07-24
- * @version 2.6.4
+ * @version 2.8.0
  */
 @SuppressWarnings("ProtectedField")
 public class HTTPServer
@@ -564,8 +568,9 @@ public class HTTPServer
 //            });
             server.start();
             String msg = TITLE + " (" + VERSION + ") is listening on port " + server.port;
-            DISPLAY.level(0).println(msg);
-            openURL(new URL("http", "localhost", server.port, "/"));
+            DISPLAY.println(DEFAULT, msg);
+//            openURL(new URL("http", "localhost", server.port, "/"));
+            openURL(new URI(SERVER, null, "localhost", server.port, "/", null, null));
 
             // GUI dialog to show server running, with button to
             // shutdown server.
@@ -584,7 +589,7 @@ public class HTTPServer
             exit(0);
         } catch (IOException | NumberFormatException ex)
         {
-            DISPLAY.level(0).println("error: " + ex);
+            DISPLAY.println(DEFAULT, "error: " + ex);
         }
     } //=====================================================================================
 
@@ -905,7 +910,7 @@ public class HTTPServer
                     }
                 } else if (!resp.headersSent())
                 { // if headers were not already sent, we can send an error response
-                    DISPLAY.level(0).appendln(t.getMessage());
+                    DISPLAY.appendln(DEFAULT, t.getMessage());
 
                     resp = new Response(bos, disallowBrowserFileCaching); // ignore whatever headers may have already been set
                     resp.getHeaders().add("Connection", "close"); // about to close connection

@@ -4,7 +4,7 @@
 
     <groupId>com.bewsoftware</groupId>
     <artifactId>bewsoftware-jlhttp</artifactId>
-    <version>2.7.2</version>
+    <version>2.8.0</version>
     <packaging>jar</packaging>
 
     <name>BEWSoftware JLHTTP Server</name>
@@ -24,22 +24,41 @@
     </licenses>
 
     <properties>
-        <keep.version.number/>
+        <java.version>23</java.version>
         <jar.manifest.mainClass>com.bewsoftware.httpserver.HTTPServer</jar.manifest.mainClass>
         <docs.source>src/docs/manual</docs.source>
         <docs.target>target/docs/manual</docs.target>
-        <java.version>18</java.version>
         <source.encoding>UTF-8</source.encoding>
-        <javadoc.source.version>${java.version}</javadoc.source.version>
+        <project.build.sourceEncoding>${source.encoding}</project.build.sourceEncoding>
         <jdk.version>${java.version}</jdk.version>
+
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
-        <project.build.sourceEncoding>${source.encoding}</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>${source.encoding}</project.reporting.outputEncoding>
+
+        <javadoc.source.version>${java.version}</javadoc.source.version>
         <javadoc.reporting.outputDirectory>${project.reporting.outputDirectory}/apidocs</javadoc.reporting.outputDirectory>
         <javadoc.link.url.jdk>https://docs.oracle.com/en/java/javase/${java.version}/docs/api/</javadoc.link.url.jdk>
+        <project.reporting.outputEncoding>${source.encoding}</project.reporting.outputEncoding>
+
         <skip.unit.tests>true</skip.unit.tests>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>bewsoftware-utils</artifactId>
+        </dependency>
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>${project.groupId}</groupId>
+                <artifactId>bewsoftware-utils</artifactId>
+                <version>3.0.2-SNAPSHOT</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <profiles>
         <profile>
@@ -820,7 +839,6 @@
             </plugin>
         </plugins>
     </build>
-
     <reporting>
         <plugins>
             <plugin>

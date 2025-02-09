@@ -39,7 +39,7 @@ import static com.bewsoftware.httpserver.HTTPServer.CRLF;
  * @author <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
  *
  * @since 1.0
- * @version 2.5.3
+ * @version 2.8.0
  */
 @SuppressWarnings("ProtectedField")
 public class MultipartInputStream extends FilterInputStream
@@ -155,17 +155,17 @@ public class MultipartInputStream extends FilterInputStream
 
     @Override
     @SuppressWarnings("AssignmentToMethodParameter")
-    public long skip(long len) throws IOException
+    public long skip(final long len) throws IOException
     {
         if (len <= 0 || !fill())
         {
             return 0;
         }
 
-        len = Math.min(tail - head, len);
-        head += len;
+        final long rtn = Math.min(tail - head, len);
+        head += (int) rtn;
 
-        return len;
+        return rtn;
     }
 
     /**

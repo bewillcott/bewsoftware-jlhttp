@@ -33,18 +33,15 @@ import static com.bewsoftware.httpserver.Utils.trimLeft;
 import static com.bewsoftware.httpserver.Utils.trimRight;
 
 /**
- * Headers class description.
+ * The {@code Headers} class encapsulates a collection of HTTP headers.
+ * <p>
+ * Header names are treated case-insensitively, although this class retains
+ * their original case. Header insertion order is maintained as well.
  *
  * @author <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
  *
  * @since 1.0
  * @version 2.5.3
- */
-/**
- * The {@code Headers} class encapsulates a collection of HTTP headers.
- * <p>
- * Header names are treated case-insensitively, although this class retains
- * their original case. Header insertion order is maintained as well.
  */
 @SuppressWarnings("ProtectedField")
 public class Headers implements Iterable<Header>
