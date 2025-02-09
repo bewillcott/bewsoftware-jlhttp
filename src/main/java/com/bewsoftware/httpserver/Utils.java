@@ -23,30 +23,24 @@ package com.bewsoftware.httpserver;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URL;
+import java.net.URI;
 import java.net.URLDecoder;
 import java.util.*;
 
 import static com.bewsoftware.httpserver.HTTPServer.*;
 import static com.bewsoftware.httpserver.util.Constants.DISPLAY;
+import static com.bewsoftware.utils.io.DisplayDebugLevel.DEFAULT;
 
 /**
- * Utils class contains helper methods from the original HTTPServer class.
+ * Utils interface contains helper methods from the original HTTPServer class.
  *
  * @author <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
  *
  * @since 2.5.3
- * @version 2.5.3
+ * @version 2.8.0
  */
-public class Utils
+public interface Utils
 {
-    /**
-     * Not intended to be instantiated.
-     */
-    private Utils()
-    {
-    }
-
     /**
      * Returns an HTML-escaped version of the given string for safe display
      * within a web page. The characters '&amp;', '&gt;' and '&lt;' must always
@@ -118,26 +112,26 @@ public class Utils
         System.arraycopy(MONTHS, 4 * cal.get(Calendar.MONTH), s, 8, 3);
 
         int n = cal.get(Calendar.DATE);
-        s[5] += n / 10;
-        s[6] += n % 10;
+        s[5] += (char) (n / 10);
+        s[6] += (char) (n % 10);
 
         n = cal.get(Calendar.YEAR);
-        s[12] += n / 1000;
-        s[13] += n / 100 % 10;
-        s[14] += n / 10 % 10;
-        s[15] += n % 10;
+        s[12] += (char) (n / 1000);
+        s[13] += (char) (n / 100 % 10);
+        s[14] += (char) (n / 10 % 10);
+        s[15] += (char) (n % 10);
 
         n = cal.get(Calendar.HOUR_OF_DAY);
-        s[17] += n / 10;
-        s[18] += n % 10;
+        s[17] += (char) (n / 10);
+        s[18] += (char) (n % 10);
 
         n = cal.get(Calendar.MINUTE);
-        s[20] += n / 10;
-        s[21] += n % 10;
+        s[20] += (char) (n / 10);
+        s[21] += (char) (n % 10);
 
         n = cal.get(Calendar.SECOND);
-        s[23] += n / 10;
-        s[24] += n % 10;
+        s[23] += (char) (n / 10);
+        s[24] += (char) (n % 10);
 
         return new String(s);
     }
@@ -234,14 +228,16 @@ public class Utils
      * <p>
      * Added by: Bradley Willcott (2020/12/08)
      *
-     * @param url Address to open.
+     * @param uri Address to open.
      *
      * @return process exit value: '0' is normal exit.
      *
      * @throws IOException          if any.
      * @throws InterruptedException if any.
+     *
+     * @since 2.8.0
      */
-    public static int openURL(URL url) throws IOException, InterruptedException
+    public static int openURL(final URI uri) throws IOException, InterruptedException
     {
         Runtime rt = Runtime.getRuntime();
         int rtn = 0;
@@ -252,26 +248,26 @@ public class Utils
             {
                 String[] cmd =
                 {
-                    "rundll32", "url.dll,FileProtocolHandler", url.toString()
+                    "rundll32", "url.dll,FileProtocolHandler", uri.toURL().toString()
                 };
                 rtn = rt.exec(cmd).waitFor();
-                DISPLAY.level(0).println("Browser: " + url);
+                DISPLAY.println(DEFAULT, "Browser: " + uri.toURL());
             } else if (isMac())
             {
                 String[] cmd =
                 {
-                    "open", url.toString()
+                    "open", uri.toURL().toString()
                 };
                 rtn = rt.exec(cmd).waitFor();
-                DISPLAY.level(0).println("Browser: " + url);
+                DISPLAY.println(DEFAULT, "Browser: " + uri.toURL());
             } else if (isUnix())
             {
                 String[] cmd =
                 {
-                    "xdg-open", url.toString()
+                    "xdg-open", uri.toURL().toString()
                 };
                 rtn = rt.exec(cmd).waitFor();
-                DISPLAY.level(0).println("Browser: " + url);
+                DISPLAY.println(DEFAULT, "Browser: " + uri.toURL());
             } else
             {
                 try
@@ -279,7 +275,7 @@ public class Utils
                     throw new IllegalStateException();
                 } catch (IllegalStateException ex)
                 {
-                    DISPLAY.level(0).println("desktop.not.supported");
+                    DISPLAY.println(DEFAULT, "desktop.not.supported");
                     throw ex;
                 }
             }

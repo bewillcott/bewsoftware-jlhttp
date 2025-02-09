@@ -44,7 +44,7 @@ import static java.lang.String.join;
  * @author <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
  *
  * @since 2.5.3
- * @version 2.6.5
+ * @version 2.8.0
  */
 public class NetUtils
 {
@@ -268,7 +268,7 @@ public class NetUtils
                 resp.send(200, createIndex(file, req.getPath()));
             } else
             { // redirect to the normalized directory URL ending with '/'
-                resp.redirect(req.getBaseURL() + req.getPath() + "/", true);
+                resp.redirect(req.getBaseURI() + req.getPath() + "/", true);
             }
 
         } else if (relativePath.endsWith("/"))
@@ -334,7 +334,7 @@ public class NetUtils
                 resp.send(200, createIndex(filePath, req.getPath()));
             } else
             { // redirect to the normalized directory URL ending with '/'
-                resp.redirect(req.getBaseURL() + req.getPath() + "/", true);
+                resp.redirect(req.getBaseURI() + req.getPath() + "/", true);
             }
 
         } else if (filePath.endsWith("/"))

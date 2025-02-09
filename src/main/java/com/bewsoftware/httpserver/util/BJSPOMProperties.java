@@ -24,6 +24,7 @@ import java.util.Properties;
 
 import static com.bewsoftware.httpserver.util.Constants.DISPLAY;
 import static com.bewsoftware.httpserver.util.Keys.*;
+import static com.bewsoftware.utils.io.DisplayDebugLevel.DEFAULT;
 
 /**
  * Provides access to some of the project's pom.properties.
@@ -85,7 +86,7 @@ import static com.bewsoftware.httpserver.util.Keys.*;
  * @author <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
  *
  * @since 2.6.3
- * @version 2.6.3
+ * @version 2.8.0
  */
 public final class BJSPOMProperties
 {
@@ -151,7 +152,7 @@ public final class BJSPOMProperties
 
     public static void main(String[] args)
     {
-        DISPLAY.level(0).println(BJSPOMProperties.INSTANCE);
+        DISPLAY.println(DEFAULT,BJSPOMProperties.INSTANCE);
     }
 
     @Override

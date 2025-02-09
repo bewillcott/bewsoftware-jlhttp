@@ -23,10 +23,8 @@ package com.bewsoftware.httpserver;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.*;
 
 import static com.bewsoftware.httpserver.NetUtils.detectLocalHostName;
@@ -39,13 +37,13 @@ import static com.bewsoftware.httpserver.Utils.*;
  * @author <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
  *
  * @since 1.0
- * @version 2.6.3
+ * @version 2.8.0
  */
 @SuppressWarnings("PublicField")
 public final class Request
 {
 
-    public URL baseURL; // cached value
+    public URI baseURI; // cached value
 
     public InputStream body;
 
@@ -105,18 +103,18 @@ public final class Request
     }
 
     /**
-     * Returns the base URL (scheme, host and port) of the request resource.
+     * Returns the base URI (scheme, host and port) of the request resource.
      * The host name is taken from the request URI or the Host header or a
      * default host (see RFC2616#5.2).
      *
      * @return the jarPath URL of the requested resource, or null if it
      *         is malformed
      */
-    public URL getBaseURL()
+    public URI getBaseURI()
     {
-        if (baseURL != null)
+        if (baseURI != null)
         {
-            return baseURL;
+            return baseURI;
         }
 
         // normalize host header
@@ -137,8 +135,16 @@ public final class Request
 
         try
         {
-            return baseURL = new URL(server.secure ? "https" : "http", strHost, server.port, "");
-        } catch (MalformedURLException ex)
+            return baseURI = new URI(
+                    server.secure ? "https" : "http",
+                    null,
+                    strHost,
+                    server.port,
+                    "",
+                    null,
+                    null
+            );
+        } catch (URISyntaxException ex)
         {
             return null;
         }
@@ -269,27 +275,6 @@ public final class Request
     }
 
     /**
-     * Sets the path component of the request URI. This can be useful
-     * in URL rewriting, etc.
-     *
-     * @param path the path to set
-     *
-     * @throws IllegalArgumentException if the given path is malformed
-     */
-    public void setPath(String path)
-    {
-        try
-        {
-            uri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(),
-                    trimDuplicates(path, '/'), uri.getQuery(), uri.getFragment());
-            context = null; // clear cached context so it will be recalculated
-        } catch (URISyntaxException use)
-        {
-            throw new IllegalArgumentException("error setting path", use);
-        }
-    }
-
-    /**
      * Returns the absolute (zero-based) content range value read
      * from the Range header. If multiple ranges are requested, a single
      * range containing all of them is returned.
@@ -337,7 +322,7 @@ public final class Request
     public VirtualHost getVirtualHost()
     {
         return host != null ? host
-                : (host = server.getVirtualHost(getBaseURL().getHost())) != null ? host
+                : (host = server.getVirtualHost(getBaseURI().getHost())) != null ? host
                 : (host = server.getVirtualHost(null));
     }
 
@@ -348,7 +333,7 @@ public final class Request
      *
      * @throws IOException if an error occurs or the request line is invalid
      */
-    public void readRequestLine(InputStream in) throws IOException
+    public void readRequestLine(final InputStream in) throws IOException
     {
         // RFC2616#4.1: should accept empty lines before request line
         // RFC2616#19.3: tolerate additional whitespace between tokens
@@ -384,11 +369,32 @@ public final class Request
         }
     }
 
+    /**
+     * Sets the path component of the request URI. This can be useful
+     * in URL rewriting, etc.
+     *
+     * @param path the path to set
+     *
+     * @throws IllegalArgumentException if the given path is malformed
+     */
+    public void setPath(String path)
+    {
+        try
+        {
+            uri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(),
+                    trimDuplicates(path, '/'), uri.getQuery(), uri.getFragment());
+            context = null; // clear cached context so it will be recalculated
+        } catch (URISyntaxException use)
+        {
+            throw new IllegalArgumentException("error setting path", use);
+        }
+    }
+
     @Override
     public String toString()
     {
         return "Request{"
-                + "\nbaseURL=" + baseURL + ", "
+                + "\nbaseURI=" + baseURI + ", "
                 + "\ncontext=" + context + ", "
                 + "\nheaders=" + headers + ", "
                 + "\nhost=" + host + ", "

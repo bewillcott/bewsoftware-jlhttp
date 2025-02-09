@@ -25,6 +25,7 @@
  */
 module bewsoftware.jlhttp {
     requires java.desktop;
+    requires transitive bewsoftware.utils;
 
     exports com.bewsoftware.httpserver;
 }

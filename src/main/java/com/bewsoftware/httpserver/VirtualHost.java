@@ -36,26 +36,25 @@ import static com.bewsoftware.httpserver.Utils.trimRight;
  * @author <a href="mailto:bw.opensource@yahoo.com">Bradley Willcott</a>
  *
  * @since 1.0
- * @version 2.6.4
+ * @version 2.8.0
  */
 @SuppressWarnings("ProtectedField")
-public class VirtualHost
+public final class VirtualHost
 {
+    private final Set<String> aliases = new CopyOnWriteArraySet<>();
 
-    protected final Set<String> aliases = new CopyOnWriteArraySet<>();
+    private volatile boolean allowGeneratedIndex;
 
-    protected volatile boolean allowGeneratedIndex;
-
-    protected final ConcurrentMap<String, ContextInfo> contexts
+    final ConcurrentMap<String, ContextInfo> contexts
             = new ConcurrentHashMap<>();
 
-    protected volatile String directoryIndex = "index.html";
+    private volatile String directoryIndex = "index.html";
 
-    protected final ContextInfo emptyContext = new ContextInfo(null, this);
+    private final ContextInfo emptyContext = new ContextInfo(null, this);
 
-    protected final Set<String> methods = new CopyOnWriteArraySet<>();
+    final Set<String> methods = new CopyOnWriteArraySet<>();
 
-    protected final String name;
+    private final String name;
 
     /**
      * Constructs a VirtualHost with the given name.
