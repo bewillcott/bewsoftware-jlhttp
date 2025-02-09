@@ -4,7 +4,7 @@
 
     <groupId>com.bewsoftware</groupId>
     <artifactId>bewsoftware-jlhttp</artifactId>
-    <version>2.7.1</version>
+    <version>2.7.2</version>
     <packaging>jar</packaging>
 
     <name>BEWSoftware JLHTTP Server</name>
@@ -24,7 +24,7 @@
     </licenses>
 
     <properties>
-        <keep.version.number></keep.version.number>
+        <keep.version.number/>
         <jar.manifest.mainClass>com.bewsoftware.httpserver.HTTPServer</jar.manifest.mainClass>
         <docs.source>src/docs/manual</docs.source>
         <docs.target>target/docs/manual</docs.target>
@@ -39,15 +39,11 @@
         <javadoc.reporting.outputDirectory>${project.reporting.outputDirectory}/apidocs</javadoc.reporting.outputDirectory>
         <javadoc.link.url.jdk>https://docs.oracle.com/en/java/javase/${java.version}/docs/api/</javadoc.link.url.jdk>
         <skip.unit.tests>true</skip.unit.tests>
-        <skip.version.build>false</skip.version.build>
     </properties>
 
     <profiles>
         <profile>
             <id>manual-clean</id>
-            <properties>
-                <skip.version.build>true</skip.version.build>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -71,9 +67,6 @@
 
         <profile>
             <id>manual-compile</id>
-            <properties>
-                <skip.version.build>true</skip.version.build>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -99,9 +92,6 @@
 
         <profile>
             <id>manual-clean-compile</id>
-            <properties>
-                <skip.version.build>true</skip.version.build>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -152,9 +142,6 @@
 
         <profile>
             <id>publish-all</id>
-            <properties>
-                <skip.version.build>true</skip.version.build>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -195,9 +182,6 @@
 
         <profile>
             <id>manual-publish</id>
-            <properties>
-                <skip.version.build>true</skip.version.build>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -230,9 +214,6 @@
 
         <profile>
             <id>manual-clean-publish</id>
-            <properties>
-                <skip.version.build>true</skip.version.build>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -266,9 +247,6 @@
 
         <profile>
             <id>publish-api</id>
-            <properties>
-                <skip.version.build>true</skip.version.build>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -298,9 +276,6 @@
 
         <profile>
             <id>manual-package</id>
-            <properties>
-                <skip.version.build>true</skip.version.build>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -350,27 +325,8 @@
 
         <profile>
             <id>release-profile</id>
-            <properties>
-                <skip.version.build>true</skip.version.build>
-            </properties>
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>com.bewsoftware.mojo</groupId>
-                        <artifactId>bewsoftware-version-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>Release</id>
-                                <goals>
-                                    <goal>release</goal>
-                                </goals>
-                                <configuration>
-                                    <keep>${keep.verion.number}</keep>
-                                    <finalBaseNamePropertyName>finalBaseName</finalBaseNamePropertyName>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-resources-plugin</artifactId>
@@ -623,11 +579,6 @@
                     <artifactId>bewsoftware-mdj-plugin</artifactId>
                     <version>2.0.1</version>
                 </plugin>
-                <plugin>
-                    <groupId>com.bewsoftware.mojo</groupId>
-                    <artifactId>bewsoftware-version-plugin</artifactId>
-                    <version>1.2.0</version>
-                </plugin>
 
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
@@ -724,26 +675,19 @@
         </pluginManagement>
 
         <plugins>
-            <plugin>
-                <groupId>com.bewsoftware.mojo</groupId>
-                <artifactId>bewsoftware-version-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>Build</id>
-                        <goals>
-                            <goal>build</goal>
-                        </goals>
-                        <configuration>
-                            <keep>${keep.verion.number}</keep>
-                            <skip>${skip.version.build}</skip>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <!--================== Maven JavaDoc ==================-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>javadoc</id>
+                        <goals>
+                            <goal>javadoc-no-fork</goal>
+                        </goals>
+                        <phase>site</phase>
+                    </execution>
+                </executions>
                 <configuration>
                     <docfilessubdirs>true</docfilessubdirs>
                     <source>${javadoc.source.version}</source>
@@ -803,15 +747,6 @@
                         </tag>
                     </tags>
                 </configuration>
-                <executions>
-                    <execution>
-                        <id>javadoc</id>
-                        <goals>
-                            <goal>javadoc-no-fork</goal>
-                        </goals>
-                        <phase>site</phase>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
