@@ -37,12 +37,12 @@ import javax.net.ssl.SSLServerSocketFactory;
 import javax.swing.JOptionPane;
 
 import static com.bewsoftware.httpserver.NetUtils.handleTransaction;
+import static com.bewsoftware.httpserver.Utils.openURI;
 import static com.bewsoftware.httpserver.Utils.split;
 import static com.bewsoftware.httpserver.util.BJSPOMProperties.INSTANCE;
 import static com.bewsoftware.httpserver.util.Constants.DISPLAY;
 import static com.bewsoftware.utils.io.DisplayDebugLevel.DEFAULT;
 import static java.lang.System.exit;
-import static com.bewsoftware.httpserver.Utils.openURI;
 
 /**
  * The {@code HTTPServer} class implements a light-weight HTTP server.
@@ -170,7 +170,7 @@ import static com.bewsoftware.httpserver.Utils.openURI;
  *
  * @author Amichai Rothman
  * @since 2008-07-24
- * @version 2.8.0
+ * @version 2.8.1
  */
 @SuppressWarnings("ProtectedField")
 public class HTTPServer
@@ -360,7 +360,7 @@ public class HTTPServer
      *
      * @param port the port on which this server will accept connections
      */
-    public HTTPServer(int port)
+    public HTTPServer(final int port)
     {
         setPort(port);
         addVirtualHost(new VirtualHost(null)); // add default virtual host
@@ -389,9 +389,9 @@ public class HTTPServer
      *                    the contentType, e.g. the file extensions of served files
      *                    (excluding the '.' character)
      */
-    public static void addContentType(String contentType, String... suffixes)
+    public static void addContentType(final String contentType, final String... suffixes)
     {
-        for (String suffix : suffixes)
+        for (final String suffix : suffixes)
         {
             contentTypes.put(suffix.toLowerCase(Locale.US),
                     contentType.toLowerCase(Locale.US));
@@ -406,7 +406,7 @@ public class HTTPServer
      * @throws IOException           if an error occurs
      * @throws FileNotFoundException if the file is not found or cannot be read
      */
-    public static void addContentTypes(InputStream in) throws IOException
+    public static void addContentTypes(final InputStream in) throws IOException
     {
         try (in)
         {
@@ -418,7 +418,7 @@ public class HTTPServer
 
                 if (line.length() > 0 && line.charAt(0) != '#')
                 {
-                    String[] tokens = split(line, " \t", -1);
+                    final String[] tokens = split(line, " \t", -1);
 
                     for (int i = 1; i < tokens.length; i++)
                     {
@@ -441,10 +441,10 @@ public class HTTPServer
      *
      * @return the content type for the given path, or the given default
      */
-    public static String getContentType(String path, String def)
+    public static String getContentType(final String path, final String def)
     {
-        int dot = path.lastIndexOf('.');
-        String type = dot < 0 ? def : contentTypes.get(path.substring(dot + 1)
+        final int dot = path.lastIndexOf('.');
+        final String type = dot < 0 ? def : contentTypes.get(path.substring(dot + 1)
                 .toLowerCase(Locale.US));
         return type != null ? type : def;
     }
@@ -457,10 +457,10 @@ public class HTTPServer
      *
      * @return true if the data is compressible, false if not
      */
-    public static boolean isCompressible(String contentType)
+    public static boolean isCompressible(final String contentType)
     {
-        int pos = contentType.indexOf(';'); // exclude params
-        String ct = pos < 0 ? contentType : contentType.substring(0, pos);
+        final int pos = contentType.indexOf(';'); // exclude params
+        final String ct = pos < 0 ? contentType : contentType.substring(0, pos);
 
         for (String s : compressibleContentTypes)
         {
@@ -522,7 +522,7 @@ public class HTTPServer
      * @throws InterruptedException if any.
      */
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
-    public static void main(String[] args) throws URISyntaxException, InterruptedException
+    public static void main(final String[] args) throws URISyntaxException, InterruptedException
     {
         HTTPServer server = null;
 
@@ -531,7 +531,7 @@ public class HTTPServer
             server = new HTTPServer(DEFAULT_PORT_RANGE[0]);
 
             // set up server
-            File f = new File("/etc/mime.typess");
+            final File f = new File("/etc/mime.typess");
 
             if (f.exists())
             {
@@ -548,12 +548,12 @@ public class HTTPServer
             });
 
             // The containing 'jar' file.
-            URI jarURI = URI.create("jar:" + server.getClass().getProtectionDomain()
+            final URI jarURI = URI.create("jar:" + server.getClass().getProtectionDomain()
                     .getCodeSource()
                     .getLocation()
                     .toURI().toString());
 
-            VirtualHost host = server.getVirtualHost(null); // default host
+            final VirtualHost host = server.getVirtualHost(null); // default host
             host.setAllowGeneratedIndex(true); // with directory index pages
 
 //            host.addContext("/", new FileContextHandler(""));
@@ -567,7 +567,7 @@ public class HTTPServer
 //                return 0;
 //            });
             server.start();
-            String msg = TITLE + " (" + VERSION + ") is listening on port " + server.port;
+            final String msg = TITLE + " (" + VERSION + ") is listening on port " + server.port;
             DISPLAY.println(DEFAULT, msg);
 //            openURI(new URL("http", "localhost", server.port, "/"));
             openURI(new URI(SERVER, null, "localhost", server.port, "/", null, null));
@@ -608,13 +608,13 @@ public class HTTPServer
      * @throws IllegalArgumentException if the given string does not contain
      *                                  a valid date format in any of the supported formats
      */
-    public static Date parseDate(String time)
+    public static Date parseDate(final String time)
     {
         for (String pattern : DATE_PATTERNS)
         {
             try
             {
-                SimpleDateFormat df = new SimpleDateFormat(pattern, Locale.US);
+                final SimpleDateFormat df = new SimpleDateFormat(pattern, Locale.US);
                 df.setLenient(false);
                 df.setTimeZone(GMT);
                 return df.parse(time);
@@ -632,9 +632,9 @@ public class HTTPServer
      *
      * @param host the virtual host to add
      */
-    public final void addVirtualHost(VirtualHost host)
+    public final void addVirtualHost(final VirtualHost host)
     {
-        String name = host.getName();
+        final String name = host.getName();
         hosts.put(name == null ? "" : name, host);
     }
 
@@ -647,7 +647,7 @@ public class HTTPServer
      * @return the virtual host with the given name, or null if it doesn't exist
      */
     @SuppressWarnings("element-type-mismatch")
-    public VirtualHost getVirtualHost(String name)
+    public VirtualHost getVirtualHost(final String name)
     {
         return hosts.get(name == null ? "" : name);
     }
@@ -669,7 +669,7 @@ public class HTTPServer
      *
      * @param executor the executor to use
      */
-    public void setExecutor(Executor executor)
+    public void setExecutor(final Executor executor)
     {
         this.executor = executor;
     }
@@ -679,7 +679,7 @@ public class HTTPServer
      *
      * @param port the port on which this server will accept connections
      */
-    public final void setPort(int port)
+    public final void setPort(final int port)
     {
         this.port = port;
     }
@@ -701,7 +701,7 @@ public class HTTPServer
      *
      * @param factory the server socket factory to use
      */
-    public void setServerSocketFactory(ServerSocketFactory factory)
+    public void setServerSocketFactory(final ServerSocketFactory factory)
     {
         this.serverSocketFactory = factory;
         this.secure = factory instanceof SSLServerSocketFactory;
@@ -712,7 +712,7 @@ public class HTTPServer
      *
      * @param timeout the socket timeout in milliseconds
      */
-    public void setSocketTimeout(int timeout)
+    public void setSocketTimeout(final int timeout)
     {
         this.socketTimeout = timeout;
     }
@@ -824,7 +824,7 @@ public class HTTPServer
      */
     protected ServerSocket createServerSocket() throws IOException
     {
-        ServerSocket serverSocket = serverSocketFactory.createServerSocket();
+        final ServerSocket serverSocket = serverSocketFactory.createServerSocket();
         serverSocket.setReuseAddress(true);
 
         // New code (bw)
@@ -872,10 +872,10 @@ public class HTTPServer
      *
      * @throws IOException if an error occurs
      */
-    protected void handleConnection(InputStream in, OutputStream out) throws IOException
+    protected void handleConnection(final InputStream in, final OutputStream out) throws IOException
     {
-        BufferedInputStream bis = new BufferedInputStream(in, 4096);
-        BufferedOutputStream bos = new BufferedOutputStream(out, 4096);
+        final BufferedInputStream bis = new BufferedInputStream(in, 4096);
+        final BufferedOutputStream bos = new BufferedOutputStream(out, 4096);
         Request req;
         Response resp;
 
